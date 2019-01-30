@@ -11,9 +11,16 @@ namespace Core;
 
 class Request
 {
+
+    /**
+     * 配置参数
+     * @var array
+     */
+    protected $config = [];
+
     protected $server = [];
 
-    protected $cookie = [];
+    public $cookie = [];
 
     protected $get = [];
 
@@ -26,6 +33,23 @@ class Request
     public $fd = 0;
 
     public $method = '';
+    /**
+     * 当前模块名
+     * @var string
+     */
+    protected $module;
+
+    /**
+     * 当前控制器名
+     * @var string
+     */
+    protected $controller;
+
+    /**
+     * 当前操作名
+     * @var string
+     */
+    protected $action;
 
     /**
      * 全局过滤规则
@@ -35,7 +59,29 @@ class Request
     /**
      * @var \swoole_http_request
      */
-    private $httpRequest;
+    protected $httpRequest;
+
+    protected $host;
+
+    /**
+     * 架构函数
+     * @access public
+     * @param  array $options 参数
+     */
+    public function __construct(array $options = [])
+    {
+        $this->init($options);
+    }
+
+    public function init(array $options = [])
+    {
+        $this->config = array_merge($this->config, $options);
+
+        if (is_null($this->filter) && !empty($this->config['default_filter'])) {
+            $this->filter = $this->config['default_filter'];
+        }
+    }
+
 
     public function setRequest(\swoole_http_request $request)
     {
@@ -46,12 +92,19 @@ class Request
             $this->server['HTTP_' . str_replace('-', '_', strtoupper($k))] = $v;
         }
         $this->fd = $request->fd;
-        $this->cookie = $request->cookie ?? [];
-        $this->get = $request->get ?? [];
-        $this->post = $request->post ?? [];
-        $this->files = &$request->files;
+        $this->cookie = $request->cookie ?: [];
+        $this->get = $request->get ?: [];
+        $this->post = $request->post ?: [];
+        $this->files = &$request->files ?: [];
         $this->request = $this->get + $this->post;
         $this->httpRequest = $request;
+    }
+
+    public static function __make(App $app, Config $config)
+    {
+        $request = new static($config->pull('app'));
+
+        return $request;
     }
 
     /**
@@ -71,6 +124,38 @@ class Request
     }
 
     /**
+     * 检测是否使用手机访问
+     * @access public
+     * @return bool
+     */
+    public function isMobile()
+    {
+        if ($this->header('user-agent') && preg_match('/(blackberry|configuration\/cldc|hp |hp-|htc |htc_|htc-|iemobile|kindle|midp|mmp|motorola|mobile|nokia|opera mini|opera |Googlebot-Mobile|YahooSeeker\/M1A1-R2D2|android|iphone|ipod|mobi|palm|palmos|pocket|portalmmm|ppc;|smartphone|sonyericsson|sqh|spv|symbian|treo|up.browser|up.link|vodafone|windows ce|xda |xda_)/i', $this->header('user-agent'))) {
+            return true;
+        } elseif ($this->server('HTTP_VIA') && stristr($this->server('HTTP_VIA'), "wap")) {
+            return true;
+        } elseif ($this->server('HTTP_ACCEPT') && strpos(strtoupper($this->server('HTTP_ACCEPT')), "VND.WAP.WML")) {
+            return true;
+        } elseif ($this->server('HTTP_X_WAP_PROFILE') || $this->server('HTTP_PROFILE')) {
+            return true;
+        } elseif ($this->server('HTTP_USER_AGENT') && preg_match('/(blackberry|configuration\/cldc|hp |hp-|htc |htc_|htc-|iemobile|kindle|midp|mmp|motorola|mobile|nokia|opera mini|opera |Googlebot-Mobile|YahooSeeker\/M1A1-R2D2|android|iphone|ipod|mobi|palm|palmos|pocket|portalmmm|ppc;|smartphone|sonyericsson|sqh|spv|symbian|treo|up.browser|up.link|vodafone|windows ce|xda |xda_)/i', $this->server('HTTP_USER_AGENT'))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 当前请求URL地址中的query参数
+     * @access public
+     * @return string
+     */
+    public function query()
+    {
+        return $this->server('QUERY_STRING');
+    }
+
+    /**
      * 获取服务头请求，兼容TP
      * @param null $name
      * @param null $default
@@ -78,7 +163,7 @@ class Request
      */
     public function header($name = null, $default = null)
     {
-        return $this->server($name, $default);
+        return $this->server('HTTP_' . $name, $default);
     }
 
     /**
@@ -86,7 +171,7 @@ class Request
      */
     public function user_agent()
     {
-        return $this->server('HTTP_USER_AGENT');
+        return $this->server('USER_AGENT');
     }
 
     /**
@@ -419,5 +504,197 @@ class Request
 
         return $value;
     }
+
+    /**
+     * @return string|null
+     */
+    public function ip()
+    {
+        $keys = ['REMOTE_ADDR', 'HTTP_X_REAL_IP', 'HTTP_X_FORWARDED_FOR'];
+        $arr = $this->server;
+        foreach ($keys as $v) {
+            if (array_get($arr, $v) !== null) {
+                return array_get($arr, $v);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 设置当前请求的host（包含端口）
+     * @access public
+     * @param  string $host 主机名（含端口）
+     * @return $this
+     */
+    public function setHost($host)
+    {
+        $this->host = $host;
+
+        return $this;
+    }
+
+    /**
+     * 当前请求的host
+     * @access public
+     * @param bool $strict true 仅仅获取HOST
+     * @return string
+     */
+    public function host($strict = false)
+    {
+        if (!$this->host) {
+            $this->host = $this->server('HTTP_X_REAL_HOST') ?: $this->server('HTTP_HOST');
+        }
+
+        return true === $strict && strpos($this->host, ':') ? strstr($this->host, ':', true) : $this->host;
+    }
+
+    /**
+     * 当前请求URL地址中的port参数
+     * @access public
+     * @return integer
+     */
+    public function port()
+    {
+        return $this->server('SERVER_PORT');
+    }
+
+    /**
+     * 当前请求 SERVER_PROTOCOL
+     * @access public
+     * @return string
+     */
+    public function protocol()
+    {
+        return $this->server('SERVER_PROTOCOL');
+    }
+
+    /**
+     * 当前请求 REMOTE_PORT
+     * @access public
+     * @return integer
+     */
+    public function remotePort()
+    {
+        return $this->server('REMOTE_PORT');
+    }
+
+    /**
+     * 当前请求 HTTP_CONTENT_TYPE
+     * @access public
+     * @return string
+     */
+    public function contentType()
+    {
+        $contentType = $this->server('CONTENT_TYPE');
+
+        if ($contentType) {
+            if (strpos($contentType, ';')) {
+                list($type) = explode(';', $contentType);
+            } else {
+                $type = $contentType;
+            }
+            return trim($type);
+        }
+
+        return '';
+    }
+
+    /**
+     * 设置当前的模块名
+     * @access public
+     * @param  string $module 模块名
+     * @return $this
+     */
+    public function setModule($module)
+    {
+        $this->module = $module;
+        return $this;
+    }
+
+    /**
+     * 设置当前的控制器名
+     * @access public
+     * @param  string $controller 控制器名
+     * @return $this
+     */
+    public function setController($controller)
+    {
+        $this->controller = $controller;
+        return $this;
+    }
+
+    /**
+     * 设置当前的操作名
+     * @access public
+     * @param  string $action 操作名
+     * @return $this
+     */
+    public function setAction($action)
+    {
+        $this->action = $action;
+        return $this;
+    }
+
+    /**
+     * 获取当前的模块名
+     * @access public
+     * @return string
+     */
+    public function module()
+    {
+        return $this->module ?: '';
+    }
+
+    /**
+     * 获取当前的控制器名
+     * @access public
+     * @param  bool $convert 转换为小写
+     * @return string
+     */
+    public function controller($convert = false)
+    {
+        $name = $this->controller ?: '';
+        return $convert ? strtolower($name) : $name;
+    }
+
+    /**
+     * 获取当前的操作名
+     * @access public
+     * @param  bool $convert 转换为驼峰
+     * @return string
+     */
+    public function action($convert = false)
+    {
+        $name = $this->action ?: '';
+        return $convert ? $name : strtolower($name);
+    }
+
+    /**
+     * 获取操作系统类型
+     * @return string
+     */
+    public function systems()
+    {
+        $user_agent = PHP_SAPI == 'cli' ? $this->header('user-agent') : $this->server('HTTP_USER_AGENT');
+        if (strpos($user_agent, 'iPhone')) {
+            return 'iPhone';
+        } else if (strpos($user_agent, 'Android')) {
+            return 'Android';
+        } else if (strpos($user_agent, 'iPad')) {
+            return 'iPad';
+        } else {
+            return 'Windows';
+        }
+    }
+
+    /**
+     * 获取请求时的时间
+     * @return int
+     */
+    public function time()
+    {
+        return $this->server('REQUEST_TIME') ?: \time();
+    }
+
 
 }

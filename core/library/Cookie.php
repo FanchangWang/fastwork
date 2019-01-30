@@ -8,8 +8,6 @@
 
 namespace Core;
 
-use Swoole\Http\Response;
-
 class Cookie
 {
     /**
@@ -33,9 +31,10 @@ class Cookie
         'setcookie' => true,
     ];
     /**
-     * @var \swoole_http_response
+     * @var Response
      */
     protected $response;
+
     /**
      * @var Request
      */
@@ -44,20 +43,14 @@ class Cookie
     /**
      * 构造方法
      * @access public
-     */
-    public function __construct(array $config = [])
-    {
-        $this->init($config);
-    }
-
-    /**
+     * @param array $config
      * @param Request $request
-     * @param \swoole_http_response $response
      */
-    public function setSwoole(Request $request, \swoole_http_response $response)
+    public function __construct(array $config = [], Request $request, Response $response)
     {
         $this->request = $request;
         $this->response = $response;
+        $this->init($config);
     }
 
     /**
@@ -71,9 +64,9 @@ class Cookie
         $this->config = array_merge($this->config, array_change_key_case($config));
     }
 
-    public static function __make(Config $config)
+    public static function __make(Config $config, Request $request, Response $response)
     {
-        return new static($config->pull('cookie'));
+        return new static($config->pull('cookie'), $request, $response);
     }
 
     /**
@@ -120,7 +113,7 @@ class Cookie
         // 设置cookie
         if (is_array($value)) {
             array_walk_recursive($value, [$this, 'jsonFormatProtect'], 'encode');
-            $value = 'think:' . json_encode($value);
+            $value = 'fast:' . json_encode($value);
         }
 
         $expire = !empty($config['expire']) ? $this->request->server('REQUEST_TIME', time()) + intval($config['expire']) : 0;
@@ -128,8 +121,7 @@ class Cookie
         if ($config['setcookie']) {
             $this->setCookie($name, $value, $expire, $config);
         }
-
-        $_COOKIE[$name] = $value;
+        $this->request->cookie[$name] = $value;
     }
 
     /**
@@ -177,7 +169,7 @@ class Cookie
         $prefix = !is_null($prefix) ? $prefix : $this->config['prefix'];
         $name = $prefix . $name;
 
-        return isset($_COOKIE[$name]);
+        return $this->getCookie($name);
     }
 
     /**
@@ -191,20 +183,20 @@ class Cookie
     {
         $prefix = !is_null($prefix) ? $prefix : $this->config['prefix'];
         $key = $prefix . $name;
-
+        $cookie = $this->getCookie();
         if ('' == $name) {
             if ($prefix) {
                 $value = [];
-                foreach ($_COOKIE as $k => $val) {
+                foreach ($cookie as $k => $val) {
                     if (0 === strpos($k, $prefix)) {
                         $value[$k] = $val;
                     }
                 }
             } else {
-                $value = $_COOKIE;
+                $value = $cookie;
             }
-        } elseif (isset($_COOKIE[$key])) {
-            $value = $_COOKIE[$key];
+        } elseif (isset($cookie[$key])) {
+            $value = $cookie[$key];
 
             if (0 === strpos($value, 'think:')) {
                 $value = substr($value, 6);
@@ -232,11 +224,11 @@ class Cookie
         $name = $prefix . $name;
 
         if ($config['setcookie']) {
-            $this->setcookie($name, '', $_SERVER['REQUEST_TIME'] - 3600, $config);
+            $this->setcookie($name, '', $this->request->time() - 3600, $config);
         }
 
         // 删除指定cookie
-        unset($_COOKIE[$name]);
+        $this->delCookie($name);
     }
 
     /**
@@ -248,7 +240,8 @@ class Cookie
     public function clear($prefix = null)
     {
         // 清除指定前缀的所有cookie
-        if (empty($_COOKIE)) {
+        $cookies = $this->getCookie();
+        if (empty($cookies)) {
             return;
         }
 
@@ -258,12 +251,12 @@ class Cookie
 
         if ($prefix) {
             // 如果前缀为空字符串将不作处理直接返回
-            foreach ($_COOKIE as $key => $val) {
+            foreach ($cookies as $key => $val) {
                 if (0 === strpos($key, $prefix)) {
                     if ($config['setcookie']) {
-                        $this->setcookie($key, '', $_SERVER['REQUEST_TIME'] - 3600, $config);
+                        $this->setcookie($key, '', $this->request->time() - 3600, $config);
                     }
-                    unset($_COOKIE[$key]);
+                    $this->delCookie($key);
                 }
             }
         }
@@ -276,5 +269,22 @@ class Cookie
         if (!empty($val) && true !== $val) {
             $val = 'decode' == $type ? urldecode($val) : urlencode($val);
         }
+    }
+
+    private function delCookie($name)
+    {
+        if (isset($this->request->cookie[$name])) {
+            unset($this->request->cookie[$name]);
+        }
+    }
+
+    private function getCookie($name = '', $default = null)
+    {
+        $cookies = $this->request->cookie ?: [];
+        if ('' === $name) {
+            return $cookies;
+        }
+
+        return isset($cookies[$name]) ? $cookies[$name] : $default;
     }
 }

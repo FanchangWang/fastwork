@@ -10,6 +10,8 @@ namespace Core;
 
 
 use Closure;
+use Core\exception\ClassNotFoundException;
+use ReflectionMethod;
 
 /**
  * Class Container
@@ -17,6 +19,12 @@ use Closure;
  * @property Cache $cache
  * @property Config $config
  * @property Cookie $cookie
+ * @property Env $env
+ * @property Request $request
+ * @property Response $response
+ * @property Route $route
+ * @property Session $session
+ * @property Validate $validate
  */
 class Container implements \ArrayAccess, \Countable
 {
@@ -244,20 +252,32 @@ class Container implements \ArrayAccess, \Countable
      * @param  string $class 类名
      * @param  array $vars 变量
      * @return mixed
-     * @throws \ReflectionException
      */
     public function invokeClass($class, $vars = [])
     {
-        $reflect = new \ReflectionClass($class);
-        $constructor = $reflect->getConstructor();
+        try {
+            $reflect = new \ReflectionClass($class);
 
-        if ($constructor) {
-            $args = $this->bindParams($constructor, $vars);
-        } else {
-            $args = [];
+            if ($reflect->hasMethod('__make')) {
+                $method = new ReflectionMethod($class, '__make');
+
+                if ($method->isPublic() && $method->isStatic()) {
+                    $args = $this->bindParams($method, $vars);
+                    return $method->invokeArgs(null, $args);
+                }
+            }
+            $constructor = $reflect->getConstructor();
+
+            if ($constructor) {
+                $args = $this->bindParams($constructor, $vars);
+            } else {
+                $args = [];
+            }
+
+            return $reflect->newInstanceArgs($args);
+        } catch (\ReflectionException $e) {
+            throw new ClassNotFoundException('class not exists: ' . $class, $class);
         }
-
-        return $reflect->newInstanceArgs($args);
     }
 
     /**

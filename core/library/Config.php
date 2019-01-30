@@ -29,14 +29,33 @@ class Config
      */
     protected $ext = '.php';
 
-    public function setPath($path)
+
+    /**
+     * 构造方法
+     * @access public
+     */
+    public function __construct($path = '', $ext = '.php')
     {
         $this->path = $path;
+        $this->ext = $ext;
     }
 
-    public function setExt($ext = '.php')
+    public static function __make(App $app)
     {
-        $this->ext = $ext;
+        $path = $app->getConfigPath();
+        $ext = $app->getConfigExt();
+        return new static($path, $ext);
+    }
+
+    /**
+     * 检测配置是否存在
+     * @access public
+     * @param  string $name 配置参数名（支持多级配置 .号分割）
+     * @return bool
+     */
+    public function has($name)
+    {
+        return !is_null($this->get($name));
     }
 
     /**
