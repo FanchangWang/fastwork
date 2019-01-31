@@ -27,8 +27,8 @@ class Facade
      * 绑定类的静态代理
      * @static
      * @access public
-     * @param  string|array $name 类标识
-     * @param  string $class 类名
+     * @param  string|array  $name    类标识
+     * @param  string        $class   类名
      * @return object
      */
     public static function bind($name, $class = null)
@@ -57,10 +57,11 @@ class Facade
     protected static function createFacade($class = '', $args = [], $newInstance = false)
     {
         $class = $class ?: static::class;
+
         $facadeClass = static::getFacadeClass();
 
         if ($facadeClass) {
-            $class = strtolower($facadeClass);
+            $class = $facadeClass;
         } elseif (isset(self::$bind[$class])) {
             $class = self::$bind[$class];
         }
@@ -68,37 +69,37 @@ class Facade
         if (static::$alwaysNewInstance) {
             $newInstance = true;
         }
+
         return Container::getInstance()->make($class, $args, $newInstance);
     }
 
     /**
-     * 获取当前Facade对应类名
+     * 获取当前Facade对应类名（或者已经绑定的容器对象标识）
      * @access protected
      * @return string
      */
-    protected static function getFacadeClass(): string
-    {
-    }
+    protected static function getFacadeClass()
+    {}
 
     /**
      * 带参数实例化当前Facade类
      * @access public
-     * @return object
-     * @throws \ReflectionException
+     * @return mixed
      */
     public static function instance(...$args)
     {
-        return self::createFacade('', $args);
+        if (__CLASS__ != static::class) {
+            return self::createFacade('', $args);
+        }
     }
 
     /**
      * 调用类的实例
      * @access public
-     * @param  string $class 类名或者标识
-     * @param  array|true $args 变量
-     * @param  bool $newInstance 是否每次创建新的实例
-     * @return object
-     * @throws \ReflectionException
+     * @param  string        $class          类名或者标识
+     * @param  array|true    $args           变量
+     * @param  bool          $newInstance    是否每次创建新的实例
+     * @return mixed
      */
     public static function make($class, $args = [], $newInstance = false)
     {
@@ -109,7 +110,7 @@ class Facade
         if (true === $args) {
             // 总是创建新的实例化对象
             $newInstance = true;
-            $args = [];
+            $args        = [];
         }
 
         return self::createFacade($class, $args, $newInstance);

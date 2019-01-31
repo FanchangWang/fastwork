@@ -60,6 +60,11 @@ class Container implements \ArrayAccess, \Countable
     ];
 
     /**
+     * 容器标识别名
+     * @var array
+     */
+    protected $name = [];
+    /**
      * 获取当前容器的实例（单例）
      * @access public
      * @return static
@@ -71,6 +76,17 @@ class Container implements \ArrayAccess, \Countable
         }
 
         return static::$instance;
+    }
+
+    /**
+     * 设置当前容器的实例
+     * @access public
+     * @param  object $instance
+     * @return void
+     */
+    public static function setInstance($instance)
+    {
+        static::$instance = $instance;
     }
 
     /**
@@ -96,29 +112,7 @@ class Container implements \ArrayAccess, \Countable
      */
     public static function set($abstract, $concrete = null)
     {
-        return static::getInstance()->bind($abstract, $concrete);
-    }
-
-    /**
-     * 绑定一个类、闭包、实例、接口实现到容器
-     * @access public
-     * @param  string|array $abstract 类标识、接口
-     * @param  mixed $concrete 要绑定的类、闭包或者实例
-     * @return $this
-     */
-    public function bind($abstract, $concrete = null)
-    {
-        if (is_array($abstract)) {
-            $this->bind = array_merge($this->bind, $abstract);
-        } elseif ($concrete instanceof \Closure) {
-            $this->bind[$abstract] = $concrete;
-        } elseif (is_object($concrete)) {
-            $this->instances[$abstract] = $concrete;
-        } else {
-            $this->bind[$abstract] = $concrete;
-        }
-
-        return $this;
+        return static::getInstance()->bindTo($abstract, $concrete);
     }
 
     /**
@@ -130,11 +124,15 @@ class Container implements \ArrayAccess, \Countable
      */
     public function instance($abstract, $instance)
     {
-        if (isset($this->bind[$abstract])) {
-            $abstract = $this->bind[$abstract];
-        }
+        if ($instance instanceof \Closure) {
+            $this->bind[$abstract] = $instance;
+        } else {
+            if (isset($this->bind[$abstract])) {
+                $abstract = $this->bind[$abstract];
+            }
 
-        $this->instances[$abstract] = $instance;
+            $this->instances[$abstract] = $instance;
+        }
 
         return $this;
     }
@@ -167,6 +165,8 @@ class Container implements \ArrayAccess, \Countable
             $vars = [];
         }
 
+        $abstract = isset($this->name[$abstract]) ? $this->name[$abstract] : $abstract;
+
         if (isset($this->instances[$abstract]) && !$newInstance) {
             $object = $this->instances[$abstract];
         } else {
@@ -176,6 +176,7 @@ class Container implements \ArrayAccess, \Countable
                 if ($concrete instanceof \Closure) {
                     $object = $this->invokeFunction($concrete, $vars);
                 } else {
+                    $this->name[$abstract] = $concrete;
                     $object = $this->make($concrete, $vars, $newInstance);
                 }
             } else {
@@ -408,5 +409,19 @@ class Container implements \ArrayAccess, \Countable
     public function count()
     {
         return count($this->instances);
+    }
+
+    //IteratorAggregate
+    public function getIterator()
+    {
+        return new ArrayIterator($this->instances);
+    }
+
+    public function __debugInfo()
+    {
+        $data = get_object_vars($this);
+        unset($data['instances'], $data['instance']);
+
+        return $data;
     }
 }

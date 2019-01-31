@@ -124,7 +124,7 @@ class Cache
         if (!empty($options)) {
             $this->options = array_merge($this->options, $options);
         }
-        $this->make($this->options)->init($this);
+        $this->make($this->options);
     }
 
     public static function __make(Config $config)

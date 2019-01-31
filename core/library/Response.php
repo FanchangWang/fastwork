@@ -20,15 +20,20 @@ class Response
      */
     protected $httpRequest;
 
-    public function __construct(Request $request, \Swoole\Http\Response $response)
+    public function __construct(Request $request)
     {
-        $this->httpResponse = $response;
         $this->httpRequest = $request;
     }
 
-    public static function __make(Request $request, \Swoole\Http\Response $response)
+    public function setRespone(\swoole_http_response $response)
     {
-        $request = new static($request, $response);
+
+        $this->httpResponse = $response;
+    }
+
+    public static function __make(Request $request)
+    {
+        $request = new static($request);
         return $request;
     }
 
@@ -43,6 +48,9 @@ class Response
         if ($callback) {
             return $callback . '(' . $data . ')';
         } else {
+            if (is_array($data)) {
+                $data = \json_encode($data);
+            }
             return $data;
         }
     }

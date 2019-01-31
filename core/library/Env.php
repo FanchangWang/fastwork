@@ -15,7 +15,7 @@ class Env
      * 环境变量数据
      * @var array
      */
-    protected $data = [];
+    protected static $data = [];
 
     /**
      * 读取环境变量定义文件
@@ -39,12 +39,12 @@ class Env
     public function get($name = null, $default = null, $php_prefix = true)
     {
         if (is_null($name)) {
-            return $this->data;
+            return self::$data;
         }
 
         $name = strtoupper(str_replace('.', '_', $name));
-        if (isset($this->data[$name])) {
-            return $this->data[$name];
+        if (isset(self::$data[$name])) {
+            return self::$data[$name];
         }
 
         $result = $this->getEnv($name, $default, $php_prefix);
@@ -70,8 +70,8 @@ class Env
             $result = true;
         }
 
-        if (!isset($this->data[$name])) {
-            $this->data[$name] = $result;
+        if (!isset(self::$data[$name])) {
+            self::$data[$name] = $result;
         }
 
         return $result;
@@ -92,16 +92,16 @@ class Env
             foreach ($env as $key => $val) {
                 if (is_array($val)) {
                     foreach ($val as $k => $v) {
-                        $this->data[$key . '_' . strtoupper($k)] = $v;
+                        self::$data[$key . '_' . strtoupper($k)] = $v;
                     }
                 } else {
-                    $this->data[$key] = $val;
+                    self::$data[$key] = $val;
                 }
             }
         } else {
             $name = strtoupper(str_replace('.', '_', $env));
 
-            $this->data[$name] = $value;
+            self::$data[$name] = $value;
         }
     }
 }

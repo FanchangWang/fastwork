@@ -26,11 +26,10 @@ class Controller
      */
     protected $response = null;
 
-    public function __construct(App $app, Request $request, Response $response)
+    public function __construct(App $app, Request $request)
     {
 
         $this->app = $app;
         $this->request = $request;
-        $this->request = $response;
     }
 }

@@ -56,12 +56,14 @@ class App extends Container
      * 支持的响应事件
      * @var array
      */
-    protected $event = ['Start', 'Shutdown', 'WorkerStart', 'WorkerStop', 'WorkerExit', 'Connect', 'Receive', 'Packet', 'Close', 'BufferFull', 'BufferEmpty', 'Task', 'Finish', 'PipeMessage', 'WorkerError', 'ManagerStart', 'ManagerStop', 'Open', 'Message', 'HandShake', 'Request'];
+    protected $event = ['Start', 'Shutdown', 'WorkerStart', 'WorkerStop', 'WorkerExit', 'Connect', 'Receive', 'WorkerError', 'ManagerStart', 'ManagerStop', 'Request'];
     /**
      * 初始化的swoole
      * @var swoole_websocket_server
      */
     public $swoole;
+
+    private $lastMtime;
 
 
     public function __construct($appPath = '')
@@ -221,12 +223,12 @@ class App extends Container
     public function run()
     {
         $this->initialize();
+
         $this->swoole_config = $config = $this->config->pull('swoole');
         $swoole_server = isset($config['server']) && $config['server'] == 'websocket' ? 'swoole_websocket_server' : 'swoole_http_server';
         $config['ip'] = $ip = isset($config['ip']) && ip2long($config['ip']) ? $config['ip'] : '0.0.0.0';
         $config['port'] = $port = isset($config['port']) && intval($config['port']) ? $config['port'] : 9527;
         $this->swoole = new $swoole_server($ip, $port);
-        var_dump($config['set']);
         $this->swoole->set($config['set']);
 
         // 设置回调
@@ -234,6 +236,11 @@ class App extends Container
             if (method_exists($this, 'on' . $event)) {
                 $this->swoole->on($event, [$this, 'on' . $event]);
             }
+        }
+        if ($config['server'] == 'websocket') {
+            $this->swoole->on('open', [$this, 'onWsOpen']);
+            $this->swoole->on('message', [$this, 'onWsMessage']);
+            $this->swoole->on('close', [$this, 'onWsClose']);
         }
         if (isset($config['set']['task_worker_num']) && $config['set']['task_worker_num'] > 0) {
             if (method_exists($this, 'onTask')) {
@@ -249,7 +256,7 @@ class App extends Container
     public function onStart()
     {
         date_default_timezone_set('Asia/Shanghai');
-        echo "启动成功 {$this->swoole_config['ip']}:{$this->swoole_config['port']} \n";
+        echo "swoole is start {$this->swoole_config['ip']}:{$this->swoole_config['port']}" . PHP_EOL;
     }
 
     /**
@@ -259,8 +266,7 @@ class App extends Container
      */
     public function onWorkerStart(\swoole_server $server, $worker_id)
     {
-        // 应用初始化
-        $this->initialize();
+        $this->lastMtime = time();
         $monitor = isset($this->swoole_config['monitor']['debug']) ? $this->swoole_config['monitor']['debug'] : false;
         if (0 == $worker_id && $monitor) {
             $this->monitor($server);
@@ -281,26 +287,53 @@ class App extends Container
      */
     public function onManagerStart($serv)
     {
-        echo "管理进程启动\n";
+        echo 'swoole Manager on start' . PHP_EOL;
     }
 
     /**
      * request回调
      * @param $request
      * @param $response
+     * @return mixed
      */
     public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
     {
+        $env = \Core\facade\Env::get();
         // 执行应用并响应
         $this->request->setRequest($request);
+        $this->response->setRespone($response);
+
+        $this->route->http($this->request);
+
+        return $response->end($this->response->json(111));
     }
-    public function onTask($server,$task_id,$workder_id,$data){
+
+    public function onTask($server, $task_id, $workder_id, $data)
+    {
 
     }
 
-    public function onFinish($server,$task_id,$data){
+    public function onFinish($server, $task_id, $data)
+    {
 
     }
+
+
+    public function onWsOpen($server, $request)
+    {
+
+    }
+
+    public function onWsMessage($server, $frame)
+    {
+
+    }
+
+    public function onWsClose($server, $fd)
+    {
+
+    }
+
     /**
      * 文件监控
      *

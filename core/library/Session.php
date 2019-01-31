@@ -162,7 +162,7 @@ class Session
      */
     protected function destroySession($sessionId)
     {
-        Cache::rm('sess_' . $sessionId);
+        Cache::del('sess_' . $sessionId);
     }
 
 }
