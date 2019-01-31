@@ -99,8 +99,23 @@ if (!function_exists('config')) {
             }
 
             return 0 === strpos($name, '?') ? Config::has(substr($name, 1)) : Config::get($name);
+        } else {
+            return Config::set($name, $value);
         }
-
-        return $value;
     }
+}
+
+/**
+ * 统一格式json输出
+ */
+function format_json($data, $code, $id)
+{
+    $arr = ['code' => $code, 'request_id' => $id];
+    if ($code) {
+        $arr['msg'] = $data;
+    } else {
+        $arr['msg'] = '';
+        $arr['data'] = $data;
+    }
+    return json_encode($arr);
 }

@@ -37,17 +37,17 @@
     },
     {
         "name": "yumufeng/jd-union-sdk",
-        "version": "v1.1.4",
-        "version_normalized": "1.1.4.0",
+        "version": "v1.1.5",
+        "version_normalized": "1.1.5.0",
         "source": {
             "type": "git",
             "url": "https://github.com/yumufeng/jd-union-sdk.git",
-            "reference": "fecc68d372a76b1489613ada9920232c952c9b50"
+            "reference": "f07859b64ed3f90b941709afffdedcc57dd4fa43"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/yumufeng/jd-union-sdk/zipball/fecc68d372a76b1489613ada9920232c952c9b50",
-            "reference": "fecc68d372a76b1489613ada9920232c952c9b50",
+            "url": "https://api.github.com/repos/yumufeng/jd-union-sdk/zipball/f07859b64ed3f90b941709afffdedcc57dd4fa43",
+            "reference": "f07859b64ed3f90b941709afffdedcc57dd4fa43",
             "shasum": "",
             "mirrors": [
                 {
@@ -59,7 +59,7 @@
         "require": {
             "php": ">=7.0"
         },
-        "time": "2019-01-30T03:06:33+00:00",
+        "time": "2019-01-31T03:50:46+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

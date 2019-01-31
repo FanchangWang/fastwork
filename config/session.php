@@ -13,4 +13,5 @@ return [
     'auto_start' => true,
     'httponly' => true,
     'secure' => false,
+    'time' => 7200,
 ];

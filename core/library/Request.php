@@ -82,6 +82,12 @@ class Request
         }
     }
 
+    public static function __make(Config $config)
+    {
+        $request = new static($config->pull('app'));
+
+        return $request;
+    }
 
     public function setRequest(\swoole_http_request $request)
     {
@@ -100,11 +106,20 @@ class Request
         $this->httpRequest = $request;
     }
 
-    public static function __make(App $app, Config $config)
+    public function id()
     {
-        $request = new static($config->pull('app'));
+        return \uuid();
+    }
 
-        return $request;
+    /**
+     * 获取当前域名
+     * @return string
+     */
+    public function domain()
+    {
+        $url = (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == '443') ? 'https://' : 'http://';
+        $url .= $_SERVER['HTTP_HOST'];
+        return $url;
     }
 
     /**

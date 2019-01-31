@@ -12,7 +12,25 @@ namespace Core;
 class Controller
 {
 
-    public function __construct(App $app)
+    /**
+     * @var App
+     */
+    protected $app;
+    /**
+     * @var Request
+     */
+    protected $request;
+
+    /**
+     * @var Response
+     */
+    protected $response = null;
+
+    public function __construct(App $app, Request $request, Response $response)
     {
+
+        $this->app = $app;
+        $this->request = $request;
+        $this->request = $response;
     }
 }

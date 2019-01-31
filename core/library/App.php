@@ -62,6 +62,7 @@ class App extends Container
 
         $this->initialized = true;
 
+        $this->runtimePath = $this->rootPath . 'runtime' . DIRECTORY_SEPARATOR;
         $this->rootPath = dirname($this->appPath) . DIRECTORY_SEPARATOR;
         $this->configPath = $this->rootPath . 'config' . DIRECTORY_SEPARATOR;
 
@@ -74,6 +75,7 @@ class App extends Container
             'core_path' => $this->corePath,
             'root_path' => $this->rootPath,
             'app_path' => $this->appPath,
+            'runtime_path' => $this->runtimePath,
             'config_path' => $this->configPath
         ]);
 
@@ -99,7 +101,26 @@ class App extends Container
     {
         // 定位模块目录
         $module = $module ? $module . DIRECTORY_SEPARATOR : '';
-        $path   = $this->appPath . $module;
+        $path = $this->appPath . $module;
+        // 加载公共文件
+        if (is_file($path . 'common.php')) {
+            include_once $path . 'common.php';
+        }
+
+        // 自动读取配置文件
+        if (is_dir($path . 'config')) {
+            $dir = $path . 'config' . DIRECTORY_SEPARATOR;
+        } elseif (is_dir($this->configPath . $module)) {
+            $dir = $this->configPath . $module;
+        }
+        $files = isset($dir) ? scandir($dir) : [];
+        foreach ($files as $file) {
+            if ('.' . pathinfo($file, PATHINFO_EXTENSION) === $this->configExt) {
+                $this->config->load($dir . $file, pathinfo($file, PATHINFO_FILENAME));
+            }
+        }
+
+
     }
 
 

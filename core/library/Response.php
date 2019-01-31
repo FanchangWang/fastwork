@@ -16,14 +16,20 @@ class Response
     private $httpResponse;
 
     /**
-     * @var \swoole_http_request
+     * @var Request
      */
     protected $httpRequest;
 
-    public function __construct(Request $request, \swoole_http_response $response)
+    public function __construct(Request $request, \Swoole\Http\Response $response)
     {
         $this->httpResponse = $response;
         $this->httpRequest = $request;
+    }
+
+    public static function __make(Request $request, \Swoole\Http\Response $response)
+    {
+        $request = new static($request, $response);
+        return $request;
     }
 
     /**
@@ -49,6 +55,10 @@ class Response
         }
     }
 
+    /**
+     * 设置响应头
+     * @param $code
+     */
     public function code($code)
     {
         $this->httpResponse->status($code);
@@ -62,6 +72,14 @@ class Response
     public function write($html)
     {
         $this->httpResponse->write($html);
+    }
+
+    public function gzip($level = NULL)
+    {
+        if ($level === NULL) {
+            $level = 0;
+        }
+        $level > 0 && $this->httpResponse->gzip($level);
     }
 
     /**
@@ -92,7 +110,7 @@ class Response
     {
         if ($this->httpRequest->isJson()) {
             $this->header('Content-type', 'application/json');
-            return format_json($data, 0, $this->httpRequest->id());
+            return format_json($data, 1, $this->httpRequest->id());
         } else {
             if (!file_exists($file)) {
                 throw new \HttpResponseException('未定义模板路径:' . $file, 404);

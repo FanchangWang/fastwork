@@ -25,6 +25,7 @@ use ReflectionMethod;
  * @property Route $route
  * @property Session $session
  * @property Validate $validate
+ * @property Log $log
  */
 class Container implements \ArrayAccess, \Countable
 {
@@ -54,7 +55,8 @@ class Container implements \ArrayAccess, \Countable
         'validate' => Validate::class,
         'request' => Request::class,
         'response' => Response::class,
-        'route' => Route::class
+        'route' => Route::class,
+        'log' => Log::class
     ];
 
     /**
