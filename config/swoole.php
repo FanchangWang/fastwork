@@ -21,12 +21,12 @@ return [
         'document_root' => Env::get('root_path') . 'public',
         'worker_num' => 2,
         'max_request' => 10000,
-        'task_worker_num' => 4,
+        'task_worker_num' => 2,
         'reload_async' => true,
     ],
     'monitor' => [
-        'timer' => 3000,  //定时器间隔时间，单位毫秒
-        'debug' => true,       //重启
+        'timer' => 2000,  //定时器间隔时间，单位毫秒
+        'debug' => false,       //重启
         'path' => [
             Env::get('app_path'),
             Env::get('config_path'),

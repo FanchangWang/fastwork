@@ -8,7 +8,15 @@
 
 namespace App\index\controller;
 
+use Core\Request;
+
 class Index
 {
 
+
+    public function index(Request $request)
+    {
+        $action = $request->param();
+        return $action;
+    }
 }

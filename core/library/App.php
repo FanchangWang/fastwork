@@ -63,7 +63,7 @@ class App extends Container
      */
     public $swoole;
 
-    private $lastMtime;
+    protected $lastMtime = 0;
 
 
     public function __construct($appPath = '')
@@ -255,7 +255,6 @@ class App extends Container
 
     public function onStart()
     {
-        date_default_timezone_set('Asia/Shanghai');
         echo "swoole is start {$this->swoole_config['ip']}:{$this->swoole_config['port']}" . PHP_EOL;
     }
 
@@ -266,10 +265,13 @@ class App extends Container
      */
     public function onWorkerStart(\swoole_server $server, $worker_id)
     {
+        date_default_timezone_set('Asia/Shanghai');
         $this->lastMtime = time();
-        $monitor = isset($this->swoole_config['monitor']['debug']) ? $this->swoole_config['monitor']['debug'] : false;
-        if (0 == $worker_id && $monitor) {
-            $this->monitor($server);
+        if (0 == $worker_id) {
+            $monitor = isset($this->swoole_config['monitor']['debug']) ? $this->swoole_config['monitor']['debug'] : false;
+            if ($monitor) {
+                $this->monitor($server);
+            }
         }
     }
 
@@ -298,14 +300,47 @@ class App extends Container
      */
     public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
     {
-        $env = \Core\facade\Env::get();
-        // 执行应用并响应
+
+        if ($request->server['request_uri'] == '/favicon.ico') {
+            return $response->end();
+        };
         $this->request->setRequest($request);
         $this->response->setRespone($response);
+        $router = $this->route->http($this->request, $this->config);
+        $app_namespace = $this->env->get('app_namespace', $this->namespace);
 
-        $this->route->http($this->request);
+        $module = $router['m'];
+        $controller = ucfirst($router['c']);
+        $action = $router['a'];
+        $param = $router['p'];
 
-        return $response->end($this->response->json(111));
+        $classname = "\\{$app_namespace}\\{$module}\\controller\\{$controller}";
+        try {
+            $reflect = new \ReflectionClass($classname);
+            $constructor = $reflect->getConstructor();
+            if ($constructor) {
+                $args = $this->bindParams($constructor, []);
+            } else {
+                $args = [];
+            }
+            $method = $reflect->getMethod($action);
+            if ($method->isPublic()) {
+                $content = $this->invokeMethod([$reflect->newInstanceArgs($args), $action], $param);
+                if (is_array($content)) {
+                    $content = $this->response->json($content);
+                }
+                //改进对验证码和图片输出的支持
+                if (!empty($content)) {
+                    $response->write($content);
+                }
+                return $response->end();
+            } else {
+                $response->end('method not exists: ' . "\\{$module}\\{$controller}\\{$action}");
+            }
+        } catch (\ReflectionException $e) {
+            $response->end('not exists: ' . $e->getMessage());
+        }
+
     }
 
     public function onTask($server, $task_id, $workder_id, $data)
@@ -349,13 +384,13 @@ class App extends Container
             foreach ($paths as $path) {
                 $dir = new \RecursiveDirectoryIterator($path);
                 $iterator = new \RecursiveIteratorIterator($dir);
-
                 foreach ($iterator as $file) {
                     if (pathinfo($file, PATHINFO_EXTENSION) != 'php') {
                         continue;
                     }
-
                     if ($this->lastMtime < $file->getMTime()) {
+                        var_dump($this->lastMtime);
+                        var_dump($file->getMTime());
                         $this->lastMtime = $file->getMTime();
                         echo '[update]' . $file . " reload...\n";
                         $server->reload();

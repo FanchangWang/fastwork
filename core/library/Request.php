@@ -82,6 +82,14 @@ class Request
         }
     }
 
+    /**
+     * @return array
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
+    }
+
     public static function __make(Config $config)
     {
         $request = new static($config->pull('app'));
@@ -106,6 +114,14 @@ class Request
         $this->httpRequest = $request;
     }
 
+    /**
+     * @return \swoole_http_request
+     */
+    public function getHttpRequest(): \swoole_http_request
+    {
+        return $this->httpRequest;
+    }
+
     public function id()
     {
         return \uuid();
@@ -117,8 +133,8 @@ class Request
      */
     public function domain()
     {
-        $url = (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == '443') ? 'https://' : 'http://';
-        $url .= $_SERVER['HTTP_HOST'];
+        $url = ($this->server('SERVER_PORT') && $this->server('SERVER_PORT') == '443') ? 'https://' : 'http://';
+        $url .= $this->server('HTTP_HOST');
         return $url;
     }
 
@@ -320,6 +336,18 @@ class Request
         } else {
             return false;
         }
+    }
+
+    /**
+     * 设置参数
+     * @param array $params
+     * @return Request
+     */
+    public function setParam(array $params)
+    {
+        $this->get = array_merge($this->get, $params);
+        $this->request = $this->get + $this->post;
+        return $this;
     }
 
     /**

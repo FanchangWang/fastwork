@@ -8,6 +8,10 @@
 
 return [
     /**
+     * 默认模块
+     */
+    'default_module' => 'index',
+    /**
      * 默认控制器
      */
     'default_controller' => 'Index',

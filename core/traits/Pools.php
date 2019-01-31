@@ -61,7 +61,7 @@ trait Pools
         if ($this->pool->length() > 0) {
             $server = $this->pool->pop();
         } else {
-            if (!method_exists('createPool')) {
+            if (!method_exists(static::class, 'createPool')) {
                 throw  new \RuntimeException('createPool Method Not Found');
             }
             $server = $this->createPool();

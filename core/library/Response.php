@@ -29,6 +29,25 @@ class Response
     {
 
         $this->httpResponse = $response;
+        return $this;
+    }
+
+    /**
+     * @param Request $httpRequest
+     * @return Response
+     */
+    public function setHttpRequest(Request $httpRequest)
+    {
+        $this->httpRequest = $httpRequest;
+        return $this;
+    }
+
+    /**
+     * @return \swoole_http_response
+     */
+    public function getHttpResponse(): \swoole_http_response
+    {
+        return $this->httpResponse;
     }
 
     public static function __make(Request $request)

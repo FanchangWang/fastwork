@@ -31,5 +31,11 @@ class Controller
 
         $this->app = $app;
         $this->request = $request;
+        $this->response = $this->app['response'];
+        $this->init();
+    }
+
+    protected function init()
+    {
     }
 }

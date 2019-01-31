@@ -16,7 +16,6 @@ use ReflectionMethod;
 /**
  * Class Container
  * @package Core
- * @property Cache $cache
  * @property Config $config
  * @property Cookie $cookie
  * @property Env $env
@@ -47,7 +46,6 @@ class Container implements \ArrayAccess, \Countable
      */
     protected $bind = [
         'app' => App::class,
-        'cache' => Cache::class,
         'config' => Config::class,
         'cookie' => Cookie::class,
         'env' => Env::class,
