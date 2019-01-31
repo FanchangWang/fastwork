@@ -11,31 +11,104 @@ namespace Core;
 class Response
 {
     /**
-     * @var Request
+     * @var \swoole_http_response
+     */
+    private $httpResponse;
+
+    /**
+     * @var \swoole_http_request
      */
     protected $httpRequest;
 
-    protected $_session = null;
-
-    /**
-     * @var \swoole_http_response
-     */
-    protected $response;
-
-
-    public function __construct(Request $request)
+    public function __construct(Request $request, \swoole_http_response $response)
     {
+        $this->httpResponse = $response;
         $this->httpRequest = $request;
     }
 
-    public function setResponse(Response $response)
+    /**
+     * @param string $data
+     * @param null|string $callback
+     * @return string
+     */
+    public function json($data, $callback = null)
     {
-        $this->response = $response;
+        $this->header('Content-type', 'application/json');
+        if ($callback) {
+            return $callback . '(' . $data . ')';
+        } else {
+            return $data;
+        }
     }
 
-    public function cookie(string $name, $value, $expire, $path, $domain, $secure = null, $httponly = null)
+    public function header($key, $val, $code = null)
     {
-        $this->response->cookie($name, $value, $expire, $path, $domain, $secure, $httponly);
+        $this->httpResponse->header($key, $val);
+        if ($code) {
+            $this->code($code);
+        }
+    }
+
+    public function code($code)
+    {
+        $this->httpResponse->status($code);
+    }
+
+    public function cookie(...$args)
+    {
+        $this->httpResponse->cookie(...$args);
+    }
+
+    public function write($html)
+    {
+        $this->httpResponse->write($html);
+    }
+
+    /**
+     * 页面跳转
+     * @param $url
+     * @param array $args
+     * @return string
+     */
+    public function redirect($url, $args = [])
+    {
+        if (isset($args['time'])) {
+            $this->header('Refresh', $args['time'] . ';url=' . $url);
+        } else if (isset($args['httpCode'])) {
+            $this->header('Location', $url, $args['httpCode']);
+        } else {
+            $this->header('Location', $url, 301);
+        }
+        return '';
+    }
+
+    /**
+     * @param string $file
+     * @param array $data
+     * @return string
+     * @throws \HttpResponseException
+     */
+    public function tpl($file, array $data = [])
+    {
+        if ($this->httpRequest->isJson()) {
+            $this->header('Content-type', 'application/json');
+            return format_json($data, 0, $this->httpRequest->id());
+        } else {
+            if (!file_exists($file)) {
+                throw new \HttpResponseException('未定义模板路径:' . $file, 404);
+            }
+            ob_start();
+            extract($data);
+            require $file;
+            return ob_get_clean();
+        }
+    }
+
+    public function __call($name, $arguments)
+    {
+        if (method_exists($this->httpResponse, $name)) {
+            return $this->httpResponse->$name(...$arguments);
+        }
     }
 
 }

@@ -3,6 +3,7 @@
 use Core\facade\Config;
 
 /**
+ * 生成UUID
  * @param bool $base62
  * @return string
  * @throws Exception
@@ -25,6 +26,7 @@ function uuid($base62 = true)
 
 
 /**
+ * 从数组中根据key取出值
  * @param array $arr
  * @param $key
  * @return mixed|null
@@ -49,6 +51,16 @@ function array_get($arr, $key, $default = null)
 }
 
 /**
+ * 获取协程ID
+ * @return mixed
+ */
+function get_co_id()
+{
+    return \Swoole\Coroutine::getuid();
+}
+
+/**
+ * 过滤xss
  * @param $str
  * @param null $allow_tags
  * @return string
@@ -69,6 +81,9 @@ function filter_xss($str, $allow_tags = null)
     return $str;
 }
 
+/**
+ * 读取配置文件
+ */
 if (!function_exists('config')) {
     /**
      * 获取和设置配置参数

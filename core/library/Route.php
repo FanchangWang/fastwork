@@ -12,4 +12,8 @@ namespace Core;
 class Route
 {
 
+    public function http()
+    {
+
+    }
 }

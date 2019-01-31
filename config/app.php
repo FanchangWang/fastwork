@@ -7,5 +7,16 @@
  */
 
 return [
+    /**
+     * 默认控制器
+     */
+    'default_controller' => 'Index',
+    /**
+     * 默认操作
+     */
+    'default_action' => 'index',
+    /**
+     * 默认过滤
+     */
     'default_filter' => ''
 ];

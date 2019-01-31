@@ -48,8 +48,8 @@ class Cookie
      */
     public function __construct(array $config = [], Request $request, Response $response)
     {
-        $this->request = $request;
-        $this->response = $response;
+        $this->request = &$request;
+        $this->response = &$response;
         $this->init($config);
     }
 
@@ -244,7 +244,6 @@ class Cookie
         if (empty($cookies)) {
             return;
         }
-
         // 要删除的cookie前缀，不指定则删除config设置的指定前缀
         $config = $this->config;
         $prefix = !is_null($prefix) ? $prefix : $config['prefix'];
@@ -260,7 +259,6 @@ class Cookie
                 }
             }
         }
-
         return;
     }
 
