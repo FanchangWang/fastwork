@@ -96,35 +96,15 @@ class Response
         $this->httpResponse->cookie(...$args);
     }
 
-    public function write($html)
-    {
-        $this->httpResponse->write($html);
-    }
-
-    public function gzip($level = NULL)
-    {
-        if ($level === NULL) {
-            $level = 0;
-        }
-        $level > 0 && $this->httpResponse->gzip($level);
-    }
-
     /**
      * 页面跳转
      * @param $url
      * @param array $args
      * @return string
      */
-    public function redirect($url, $args = [])
+    public function redirect($url, $code = 302)
     {
-        if (isset($args['time'])) {
-            $this->header('Refresh', $args['time'] . ';url=' . $url);
-        } else if (isset($args['httpCode'])) {
-            $this->header('Location', $url, $args['httpCode']);
-        } else {
-            $this->header('Location', $url, 301);
-        }
-        return '';
+        $this->httpResponse->redirect($url, $code);
     }
 
     /**
