@@ -40,7 +40,7 @@ class Log
      * @param array $msg
      * @return bool
      */
-    public function record($type, $msg)
+    public function record($type, ...$msg)
     {
         $type = strtoupper($type);
         $msg = "{$type} \t " . date("Y-m-d h:i:s") . " \t " . join(" \t ", $msg);

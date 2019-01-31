@@ -68,7 +68,6 @@ class Facade
         if (static::$alwaysNewInstance) {
             $newInstance = true;
         }
-
         return Container::getInstance()->make($class, $args, $newInstance);
     }
 

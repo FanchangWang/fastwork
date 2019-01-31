@@ -17,15 +17,10 @@ class Env
      */
     protected $data = [];
 
-    public function __construct()
-    {
-        $this->data = $_ENV;
-    }
-
     /**
      * 读取环境变量定义文件
      * @access public
-     * @param  string    $file  环境变量定义文件
+     * @param  string $file 环境变量定义文件
      * @return void
      */
     public function load($file)
@@ -37,8 +32,8 @@ class Env
     /**
      * 获取环境变量值
      * @access public
-     * @param  string    $name 环境变量名
-     * @param  mixed     $default  默认值
+     * @param  string $name 环境变量名
+     * @param  mixed $default 默认值
      * @return mixed
      */
     public function get($name = null, $default = null, $php_prefix = true)
@@ -48,12 +43,13 @@ class Env
         }
 
         $name = strtoupper(str_replace('.', '_', $name));
-
         if (isset($this->data[$name])) {
             return $this->data[$name];
         }
 
-        return $this->getEnv($name, $default, $php_prefix);
+        $result = $this->getEnv($name, $default, $php_prefix);
+        return $result;
+
     }
 
     protected function getEnv($name, $default = null, $php_prefix = true)
@@ -84,8 +80,8 @@ class Env
     /**
      * 设置环境变量值
      * @access public
-     * @param  string|array  $env   环境变量
-     * @param  mixed         $value  值
+     * @param  string|array $env 环境变量
+     * @param  mixed $value 值
      * @return void
      */
     public function set($env, $value = null)

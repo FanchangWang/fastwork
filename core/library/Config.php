@@ -100,7 +100,9 @@ class Config implements \ArrayAccess
             if (!is_file($path)) {
                 return NULL;
             }
+            var_dump($name);
             $this->config[$file] = require $path;
+            var_dump($this->config);
         }
         return $this->config[$file];
     }

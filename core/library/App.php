@@ -48,10 +48,25 @@ class App extends Container
      */
     protected $initialized = false;
 
+    /**
+     * @var swoole的配置
+     */
+    protected $swoole_config;
+    /**
+     * 支持的响应事件
+     * @var array
+     */
+    protected $event = ['Start', 'Shutdown', 'WorkerStart', 'WorkerStop', 'WorkerExit', 'Connect', 'Receive', 'Packet', 'Close', 'BufferFull', 'BufferEmpty', 'Task', 'Finish', 'PipeMessage', 'WorkerError', 'ManagerStart', 'ManagerStop', 'Open', 'Message', 'HandShake', 'Request'];
+    /**
+     * 初始化的swoole
+     * @var swoole_websocket_server
+     */
+    public $swoole;
+
+
     public function __construct($appPath = '')
     {
-        $this->corePath = dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR;
-        $this->path($appPath);
+        $this->corePath = dirname(__DIR__) . DIRECTORY_SEPARATOR;
     }
 
     public function initialize()
@@ -62,22 +77,22 @@ class App extends Container
 
         $this->initialized = true;
 
-        $this->runtimePath = $this->rootPath . 'runtime' . DIRECTORY_SEPARATOR;
         $this->rootPath = dirname($this->appPath) . DIRECTORY_SEPARATOR;
         $this->configPath = $this->rootPath . 'config' . DIRECTORY_SEPARATOR;
-
+        $this->runtimePath = $this->rootPath . 'runtime' . DIRECTORY_SEPARATOR;
         $this->instance('app', $this);
 
         $this->configExt = $this->env->get('config_ext', '.php');
 
-        // 设置路径环境变量
-        $this->env->set([
+        $env = [
             'core_path' => $this->corePath,
             'root_path' => $this->rootPath,
             'app_path' => $this->appPath,
             'runtime_path' => $this->runtimePath,
             'config_path' => $this->configPath
-        ]);
+        ];
+        // 设置路径环境变量
+        $this->env->set($env);
 
         // 加载环境变量配置文件
         if (is_file($this->rootPath . '.env')) {
@@ -119,8 +134,41 @@ class App extends Container
                 $this->config->load($dir . $file, pathinfo($file, PATHINFO_FILENAME));
             }
         }
+        $this->setModulePath($path);
 
+        $this->request->init($this->config->get('app'));
+        $this->cookie->init($this->config->get('cookie'));
 
+        if ($module) {
+            // 对容器中的对象实例进行配置更新
+            $this->containerConfigUpdate($module);
+        }
+    }
+
+    protected function containerConfigUpdate($module)
+    {
+    }
+
+    /**
+     * 获取模块路径
+     * @access public
+     * @return string
+     */
+    public function getModulePath()
+    {
+        return $this->modulePath;
+    }
+
+    /**
+     * 设置模块路径
+     * @access public
+     * @param  string $path 路径
+     * @return void
+     */
+    public function setModulePath($path)
+    {
+        $this->modulePath = $path;
+        $this->env->set('module_path', $path);
     }
 
 
@@ -153,7 +201,6 @@ class App extends Container
     public function path($path)
     {
         $this->appPath = realpath($path) . DIRECTORY_SEPARATOR;
-
         return $this;
     }
 
@@ -167,5 +214,123 @@ class App extends Container
         return $this->appPath;
     }
 
+
+    /**
+     * 启动
+     */
+    public function run()
+    {
+        $this->initialize();
+        $this->swoole_config = $config = $this->config->pull('swoole');
+        $swoole_server = isset($config['server']) && $config['server'] == 'websocket' ? 'swoole_websocket_server' : 'swoole_http_server';
+        $config['ip'] = $ip = isset($config['ip']) && ip2long($config['ip']) ? $config['ip'] : '0.0.0.0';
+        $config['port'] = $port = isset($config['port']) && intval($config['port']) ? $config['port'] : 9527;
+        $this->swoole = new $swoole_server($ip, $port);
+        var_dump($config['set']);
+        $this->swoole->set($config['set']);
+
+        // 设置回调
+        foreach ($this->event as $event) {
+            if (method_exists($this, 'on' . $event)) {
+                $this->swoole->on($event, [$this, 'on' . $event]);
+            }
+        }
+        if (isset($config['set']['task_worker_num']) && $config['set']['task_worker_num'] > 0) {
+            if (method_exists($this, 'onTask')) {
+                $this->swoole->on('task', [$this, 'onTask']);
+            }
+            if (method_exists($this, 'onFinish')) {
+                $this->swoole->on('finish', [$this, 'onFinish']);
+            }
+        }
+        $this->swoole->start();
+    }
+
+    public function onStart()
+    {
+        date_default_timezone_set('Asia/Shanghai');
+        echo "启动成功 {$this->swoole_config['ip']}:{$this->swoole_config['port']} \n";
+    }
+
+    /**
+     * Worker进程/Task进程启动时
+     * @param \swoole_server $server
+     * @param $worker_id
+     */
+    public function onWorkerStart(\swoole_server $server, $worker_id)
+    {
+        // 应用初始化
+        $this->initialize();
+        $monitor = isset($this->swoole_config['monitor']['debug']) ? $this->swoole_config['monitor']['debug'] : false;
+        if (0 == $worker_id && $monitor) {
+            $this->monitor($server);
+        }
+    }
+
+    /**
+     * 当worker/task_worker进程发生异常
+     */
+    public function onWorkerError($server, $worker_id, $worker_pid, $exit_code)
+    {
+        $this->log->record('SWOOLE', "进程异常", "WorkerID:{$worker_id}", "WorkerPID:{$worker_pid}", "ExitCode:{$exit_code}");
+    }
+
+    /**
+     * 当管理进程启动时
+     * @param $serv
+     */
+    public function onManagerStart($serv)
+    {
+        echo "管理进程启动\n";
+    }
+
+    /**
+     * request回调
+     * @param $request
+     * @param $response
+     */
+    public function onRequest(\swoole_http_request $request, \swoole_http_response $response)
+    {
+        // 执行应用并响应
+        $this->request->setRequest($request);
+    }
+    public function onTask($server,$task_id,$workder_id,$data){
+
+    }
+
+    public function onFinish($server,$task_id,$data){
+
+    }
+    /**
+     * 文件监控
+     *
+     * @param $server
+     */
+    protected function monitor(\swoole_server $server)
+    {
+        $monitor = isset($this->swoole_config['monitor']) ? $this->swoole_config['monitor'] : false;
+        $paths = $monitor['path'] ?: [$this->getAppPath(), $this->getConfigPath()];
+        $timer = $monitor['timer'] ?: 2;
+
+        $server->tick($timer, function () use ($paths, $server) {
+            foreach ($paths as $path) {
+                $dir = new \RecursiveDirectoryIterator($path);
+                $iterator = new \RecursiveIteratorIterator($dir);
+
+                foreach ($iterator as $file) {
+                    if (pathinfo($file, PATHINFO_EXTENSION) != 'php') {
+                        continue;
+                    }
+
+                    if ($this->lastMtime < $file->getMTime()) {
+                        $this->lastMtime = $file->getMTime();
+                        echo '[update]' . $file . " reload...\n";
+                        $server->reload();
+                        return;
+                    }
+                }
+            }
+        });
+    }
 
 }
