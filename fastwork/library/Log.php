@@ -8,6 +8,7 @@
 
 namespace fastwork;
 
+use fastwork\facades\Env;
 
 class Log
 {
@@ -19,15 +20,9 @@ class Log
 
     private static $logs = [];
 
-    /**
-     * @var Config
-     */
-    protected $app;
-
-    public function __construct($config)
+    public function __construct(Config $config)
     {
 
-        $this->app = $config;
         self::$config = $config->pull('log');
     }
 
@@ -43,7 +38,7 @@ class Log
      * @param array $params
      * @return bool
      */
-    public function record($type, ...$params)
+    public function record($type, $params)
     {
         $type = strtoupper($type);
         if (is_array($params)) {
@@ -61,9 +56,9 @@ class Log
     public function save()
     {
         if (empty(self::$logs)) return false;
-        $path = $this->app->get('runtime_path');
+        $path = Env::get('runtime_path');
         foreach (self::$logs as $type => $logs) {
-            $dir_path = $path . '/log/' . date('Ymd') . DIRECTORY_SEPARATOR;
+            $dir_path = $path . 'log/' . date('Ymd') . DIRECTORY_SEPARATOR;
             !is_dir($dir_path) && mkdir($dir_path, 0777, TRUE);
             $filename = $type . '.log';
             $content = NULL;

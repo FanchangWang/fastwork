@@ -10,6 +10,7 @@ namespace fastwork\swoole;
 
 
 use fastwork\Container;
+use fastwork\facades\Log;
 use fastwork\Fastwork;
 
 class Server
@@ -70,8 +71,8 @@ class Server
 
         if (0 == $worker_id) {
             $this->monitor($server);
-            $this->saveLogs($server);
         }
+        $this->saveLogs($server);
     }
 
     public function onWorkerStop(\swoole_server $server, $worker_id)
@@ -124,7 +125,7 @@ class Server
     {
         $log_save_time = Container::get('config')->get('log.save_time');
         $server->tick($log_save_time, function () {
-            Container::get('log')->save();
+           Log::save();
         });
     }
 

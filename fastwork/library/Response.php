@@ -40,22 +40,6 @@ class Response
     }
 
     /**
-     * @param mixed $httpResponse
-     */
-    public function setHttpResponse($httpResponse): void
-    {
-        $this->httpResponse = $httpResponse;
-    }
-
-    /**
-     * @return array
-     */
-    public function getHeader(): array
-    {
-        return $this->header;
-    }
-
-    /**
      * @param string $data
      * @param null|string $callback
      * @return string
@@ -138,5 +122,30 @@ class Response
         if (method_exists($this->httpResponse, $name)) {
             return $this->httpResponse->$name(...$arguments);
         }
+    }
+
+
+    /**
+     * @param mixed $httpResponse
+     */
+    public function setHttpResponse($httpResponse): void
+    {
+        $this->httpResponse = $httpResponse;
+    }
+
+    /**
+     * @return Request
+     */
+    public function getHttpRequest(): Request
+    {
+        return $this->httpRequest;
+    }
+
+    /**
+     * @return array
+     */
+    public function getHeader(): array
+    {
+        return $this->header;
     }
 }

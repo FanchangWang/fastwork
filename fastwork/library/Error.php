@@ -34,12 +34,11 @@ class Error
 
     public function report(\Throwable $e)
     {
-        Log::error([
+        Log::alert([
             'file' => $e->getFile() . ':' . $e->getLine(),
             'msg' => $e->getMessage(),
             'code' => $e->getCode(),
             'trace' => $e->getTrace()
         ]);
-        Log::save();
     }
 }

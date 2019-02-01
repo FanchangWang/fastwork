@@ -32,7 +32,7 @@ class Fastwork extends Container
      * 命名空间
      * @var string
      */
-    private $namespace = 'fastwork';
+    private $namespace = 'app';
 
     private $configExt = '.php';
 
@@ -110,13 +110,11 @@ class Fastwork extends Container
         $config['port'] = $port = isset($config['port']) && intval($config['port']) ? $config['port'] : 9527;
 
         $protecl = isset($config['server']) && $config['server'] == 'websocket' ? 'WsHttpServer' : 'HttpServer';
-        $class = "\\{$this->namespace}\\swoole\\{$protecl}";
-
+        $class = __NAMESPACE__ . "\\swoole\\{$protecl}";
         if (!class_exists($class)) {
             var_dump("class not exits:" . $class);
             return;
         }
-
         $swoole = new $swoole_server($ip, $port);
         $swoole->set($config['set']);
 
@@ -125,7 +123,7 @@ class Fastwork extends Container
 
         $call = [];
         foreach ($methods as $method) {
-            if (strpos($method->class, "{$this->namespace}\\swoole\\") === 0) {
+            if (strpos($method->class, __NAMESPACE__."\\swoole\\") === 0) {
                 if (substr($method->name, 0, 2) == 'on') {
                     $call[strtolower(substr($method->name, 2))] = $method->name;
                 }
