@@ -19,18 +19,21 @@ class Log
 
     private static $logs = [];
 
+    /**
+     * @var Config
+     */
     protected $app;
 
-    public function __construct(Fastwork $app, $config)
+    public function __construct($config)
     {
 
-        $this->app = $app;
-        self::$config = $config;
+        $this->app = $config;
+        self::$config = $config->pull('log');
     }
 
-    public static function __make(Fastwork $app, Config $config)
+    public static function __make(Config $config)
     {
-        $request = new static($app, $config->pull('log'));
+        $request = new static($config);
         return $request;
     }
 
@@ -58,7 +61,7 @@ class Log
     public function save()
     {
         if (empty(self::$logs)) return false;
-        $path = $this->app['env']->get('runtime_path');
+        $path = $this->app->get('runtime_path');
         foreach (self::$logs as $type => $logs) {
             $dir_path = $path . '/log/' . date('Ymd') . DIRECTORY_SEPARATOR;
             !is_dir($dir_path) && mkdir($dir_path, 0777, TRUE);

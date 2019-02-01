@@ -11,8 +11,8 @@ namespace fastwork\facades;
 use fastwork\Facade;
 
 /**
- * @see \Core\Config
- * @mixin \Core\Config
+ * @see \fastwork\Config
+ * @mixin \fastwork\Config
  * @method bool has(string $name) static 检测配置是否存在
  * @method array pull(string $name) static 获取一级配置
  * @method mixed get(string $name,mixed $default = null) static 获取配置参数

@@ -24,6 +24,8 @@ use ReflectionMethod;
  * @property Session $session
  * @property Validate $validate
  * @property Log $log
+ * @property Route $route
+ * @property Error $error
  */
 class Container implements \ArrayAccess, \Countable
 {
@@ -52,7 +54,9 @@ class Container implements \ArrayAccess, \Countable
         'validate' => Validate::class,
         'request' => Request::class,
         'response' => Response::class,
-        'log' => Log::class
+        'log' => Log::class,
+        'route' => Route::class,
+        'error' => Error::class
     ];
 
     /**
@@ -60,6 +64,7 @@ class Container implements \ArrayAccess, \Countable
      * @var array
      */
     protected $name = [];
+
     /**
      * 获取当前容器的实例（单例）
      * @access public
