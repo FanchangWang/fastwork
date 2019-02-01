@@ -108,11 +108,17 @@ class Fastwork extends Container
         $swoole_server = isset($config['server']) && $config['server'] == 'websocket' ? 'swoole_websocket_server' : 'swoole_http_server';
         $config['ip'] = $ip = isset($config['ip']) && ip2long($config['ip']) ? $config['ip'] : '0.0.0.0';
         $config['port'] = $port = isset($config['port']) && intval($config['port']) ? $config['port'] : 9527;
-        $swoole = new $swoole_server($ip, $port);
-        $swoole->set($config['set']);
 
         $protecl = isset($config['server']) && $config['server'] == 'websocket' ? 'WsHttpServer' : 'HttpServer';
         $class = "\\{$this->namespace}\\swoole\\{$protecl}";
+
+        if (!class_exists($class)) {
+            var_dump("class not exits:" . $class);
+            return;
+        }
+
+        $swoole = new $swoole_server($ip, $port);
+        $swoole->set($config['set']);
 
         $rf = new \ReflectionClass($class);
         $methods = $rf->getMethods(\ReflectionMethod::IS_PUBLIC);
