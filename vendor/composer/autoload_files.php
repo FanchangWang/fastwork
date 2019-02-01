@@ -6,6 +6,5 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    '7587b871ded497a423e2f886bdba9600' => $vendorDir . '/yumufeng/jd-union-sdk/src/Tools/Helpers.php',
-    'cb2bd123ec2162738e143b4667bada50' => $baseDir . '/core/Helpers.php',
+    'f1f4c9029b46941b21ee78821db0b4cb' => $baseDir . '/fastwork/helpers.php',
 );

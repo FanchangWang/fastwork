@@ -6,6 +6,8 @@
  * Time: 12:40
  */
 
+use fastwork\facades\Env;
+
 return [
     /**
      * 默认模块
@@ -22,5 +24,10 @@ return [
     /**
      * 默认过滤
      */
-    'default_filter' => ''
+    'default_filter' => '',
+    /**
+     * 异常捕获的模板
+     */
+    'http_exception_template' => 'exception.php',
+
 ];

@@ -6,7 +6,7 @@
  * Time: 12:53
  */
 
-use Core\facade\Env;
+use fastwork\facades\Env;
 
 return [
     //server设置
@@ -17,7 +17,7 @@ return [
 
     'set' => [            //配置参数  请查看  https://wiki.swoole.com/wiki/page/274.html
         'daemonize' => 0,
-        'enable_static_handler' => true,
+        'enable_static_handler' => APP_DEBUG,
         'document_root' => Env::get('root_path') . 'public',
         'worker_num' => 2,
         'max_request' => 10000,
@@ -26,7 +26,7 @@ return [
     ],
     'monitor' => [
         'timer' => 2000,  //定时器间隔时间，单位毫秒
-        'debug' => false,       //重启
+        'debug' => APP_DEBUG,       //重启
         'path' => [
             Env::get('app_path'),
             Env::get('config_path'),

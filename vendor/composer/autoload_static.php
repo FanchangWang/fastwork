@@ -4,46 +4,37 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInite17e7a2158d019a26b162848dcd659c3
+class ComposerStaticInitda5e01dd9b0a05eed98a9e4587b7a414
 {
     public static $files = array (
-        '7587b871ded497a423e2f886bdba9600' => __DIR__ . '/..' . '/yumufeng/jd-union-sdk/src/Tools/Helpers.php',
-        'cb2bd123ec2162738e143b4667bada50' => __DIR__ . '/../..' . '/core/Helpers.php',
+        'f1f4c9029b46941b21ee78821db0b4cb' => __DIR__ . '/../..' . '/fastwork/helpers.php',
     );
 
     public static $prefixLengthsPsr4 = array (
-        'T' => 
+        't' => 
         array (
-            'Traits\\' => 7,
+            'traits\\' => 7,
         ),
-        'J' => 
+        'f' => 
         array (
-            'JdMediaSdk\\' => 11,
+            'fastwork\\' => 9,
         ),
-        'C' => 
+        'a' => 
         array (
-            'Core\\' => 5,
-        ),
-        'A' => 
-        array (
-            'App\\' => 4,
+            'app\\' => 4,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Traits\\' => 
+        'traits\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/core/traits',
+            0 => __DIR__ . '/../..' . '/fastwork/traits',
         ),
-        'JdMediaSdk\\' => 
+        'fastwork\\' => 
         array (
-            0 => __DIR__ . '/..' . '/yumufeng/jd-union-sdk/src',
+            0 => __DIR__ . '/../..' . '/fastwork/library',
         ),
-        'Core\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/core/library',
-        ),
-        'App\\' => 
+        'app\\' => 
         array (
             0 => __DIR__ . '/../..' . '/app',
         ),
@@ -52,8 +43,8 @@ class ComposerStaticInite17e7a2158d019a26b162848dcd659c3
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInite17e7a2158d019a26b162848dcd659c3::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInite17e7a2158d019a26b162848dcd659c3::$prefixDirsPsr4;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitda5e01dd9b0a05eed98a9e4587b7a414::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitda5e01dd9b0a05eed98a9e4587b7a414::$prefixDirsPsr4;
 
         }, null, ClassLoader::class);
     }

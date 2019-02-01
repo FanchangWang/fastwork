@@ -34,52 +34,5 @@
             "swoft",
             "swoole"
         ]
-    },
-    {
-        "name": "yumufeng/jd-union-sdk",
-        "version": "v1.1.5",
-        "version_normalized": "1.1.5.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/yumufeng/jd-union-sdk.git",
-            "reference": "f07859b64ed3f90b941709afffdedcc57dd4fa43"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/yumufeng/jd-union-sdk/zipball/f07859b64ed3f90b941709afffdedcc57dd4fa43",
-            "reference": "f07859b64ed3f90b941709afffdedcc57dd4fa43",
-            "shasum": "",
-            "mirrors": [
-                {
-                    "url": "https://dl.laravel-china.org/%package%/%reference%.%type%",
-                    "preferred": true
-                }
-            ]
-        },
-        "require": {
-            "php": ">=7.0"
-        },
-        "time": "2019-01-31T03:50:46+00:00",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [],
-            "psr-4": {
-                "JdMediaSdk\\": "src"
-            },
-            "files": [
-                "src/Tools/Helpers.php"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "yumufeng",
-                "email": "tsj100@qq.com"
-            }
-        ]
     }
 ]

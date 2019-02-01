@@ -10,17 +10,16 @@
     "classmap": [
     ],
     "psr-4": {
-      "App\\": "app",
-      "Core\\": "core\\library",
-      "Traits\\": "core\\traits"
+      "app\\": "app",
+      "fastwork\\": "fastwork\\library",
+      "traits\\": "fastwork\\traits"
     },
     "files": [
-      "core/Helpers.php"
+      "fastwork/helpers.php"
     ]
   },
   "require": {
-    "php": ">=7.1",
-    "yumufeng/jd-union-sdk": "^1.1"
+    "php": ">=7.1"
   },
   "require-dev": {
     "swoft/swoole-ide-helper": "^4.2"

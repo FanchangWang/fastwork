@@ -6,8 +6,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Traits\\' => array($baseDir . '/core/traits'),
-    'JdMediaSdk\\' => array($vendorDir . '/yumufeng/jd-union-sdk/src'),
-    'Core\\' => array($baseDir . '/core/library'),
-    'App\\' => array($baseDir . '/app'),
+    'traits\\' => array($baseDir . '/fastwork/traits'),
+    'fastwork\\' => array($baseDir . '/fastwork/library'),
+    'app\\' => array($baseDir . '/app'),
 );
