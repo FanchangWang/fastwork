@@ -10,6 +10,7 @@ namespace fastwork;
 
 
 use Closure;
+use fastwork\cache\Redis;
 use fastwork\exception\ClassNotFoundException;
 use ReflectionMethod;
 
@@ -26,6 +27,7 @@ use ReflectionMethod;
  * @property Log $log
  * @property Route $route
  * @property Error $error
+ * @property Redis $redis
  */
 class Container implements \ArrayAccess, \Countable
 {
@@ -56,7 +58,8 @@ class Container implements \ArrayAccess, \Countable
         'response' => Response::class,
         'log' => Log::class,
         'route' => Route::class,
-        'error' => Error::class
+        'error' => Error::class,
+        'redis' => Redis::class
     ];
 
     /**

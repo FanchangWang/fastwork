@@ -45,7 +45,7 @@ class Server
 
     public function onStart(\swoole_server $server)
     {
-        $config = Container::get('config')->pull('swoole');
+        $config = $this->conf;
         echo "swoole is start {$config['ip']}:{$config['port']}" . PHP_EOL;
     }
 
@@ -69,10 +69,16 @@ class Server
         $this->app->initialize();
         $this->app->swoole = $server;
 
+        /**
+         * 定时监控
+         */
         if (0 == $worker_id) {
             $this->monitor($server);
         }
-        $this->saveLogs($server);
+        if (!$this->is_task) {
+            $this->saveLogs($server);
+            $this->app->redis->clearTimer($server);
+        }
     }
 
     public function onWorkerStop(\swoole_server $server, $worker_id)
@@ -125,7 +131,7 @@ class Server
     {
         $log_save_time = Container::get('config')->get('log.save_time');
         $server->tick($log_save_time, function () {
-           Log::save();
+            Log::save();
         });
     }
 

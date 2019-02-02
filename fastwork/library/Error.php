@@ -34,7 +34,7 @@ class Error
 
     public function report(\Throwable $e)
     {
-        Log::alert([
+        Log::error([
             'file' => $e->getFile() . ':' . $e->getLine(),
             'msg' => $e->getMessage(),
             'code' => $e->getCode(),

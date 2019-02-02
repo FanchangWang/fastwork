@@ -7,6 +7,7 @@
  */
 
 use fastwork\facades\Config;
+use fastwork\facades\Cookie;
 use fastwork\facades\Env;
 
 

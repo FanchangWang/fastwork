@@ -12,8 +12,8 @@ namespace fastwork\facades;
 use fastwork\Facade;
 
 /**
- * @see \Core\Cookie
- * @mixin \Core\Cookie
+ * @see \fastwork\Cookie
+ * @mixin \fastwork\Cookie
  * @method void init(array $config = []) static 初始化
  * @method bool has(string $name,string $prefix = null) static 判断Cookie数据
  * @method mixed prefix(string $prefix = '') static 设置或者获取cookie作用域（前缀）

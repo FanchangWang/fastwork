@@ -67,6 +67,8 @@ class HttpServer extends Server
             $content = $this->app->invokeMethod([$reflect->newInstanceArgs($args), $action], $param);
         } catch (HttpRuntimeException $exception) {
             $content = Error::render($this->app->response, $exception);
+        }catch (\Exception $exception){
+            $content = Error::render($this->app->response, $exception);
         } catch (\Throwable $exception) {
             Error::report($exception);
         }

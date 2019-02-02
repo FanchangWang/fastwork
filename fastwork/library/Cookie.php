@@ -118,7 +118,7 @@ class Cookie
             $value = 'fast:' . json_encode($value);
         }
 
-        $expire = !empty($config['expire']) ? $this->request->server('REQUEST_TIME', time()) + intval($config['expire']) : 0;
+        $expire = !empty($config['expire']) ? $this->request->time() + intval($config['expire']) : 0;
 
         if ($config['setcookie']) {
             $this->setCookie($name, $value, $expire, $config);
@@ -280,7 +280,7 @@ class Cookie
 
     private function getCookie($name = '', $default = null)
     {
-        $cookies = $this->request->cookie ?: [];
+        $cookies = $this->request->cookie() ?: [];
         if ('' === $name) {
             return $cookies;
         }

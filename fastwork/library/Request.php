@@ -8,6 +8,7 @@
 
 namespace fastwork;
 
+use fastwork\facades\Cookie;
 
 class Request
 {
@@ -170,6 +171,7 @@ class Request
 
         return false;
     }
+
     /**
      * 当前是否ssl
      * @access public
@@ -191,6 +193,7 @@ class Request
 
         return false;
     }
+
     /**
      * 当前请求URL地址中的query参数
      * @access public
@@ -309,6 +312,39 @@ class Request
     public function isCgi()
     {
         return strpos(PHP_SAPI, 'cgi') === 0;
+    }
+
+    /**
+     * 获取cookie参数
+     * @access public
+     * @param  string $name 变量名
+     * @param  string $default 默认值
+     * @param  string|array $filter 过滤方法
+     * @return mixed
+     */
+    public function cookie($name = '', $default = null, $filter = '')
+    {
+        if (empty($this->cookie)) {
+            $this->cookie = Cookie::get();
+        }
+
+        if (!empty($name)) {
+            $data = Cookie::has($name) ? Cookie::get($name) : $default;
+        } else {
+            $data = $this->cookie;
+        }
+
+        // 解析过滤器
+        $filter = $this->getFilter($filter, $default);
+
+        if (is_array($data)) {
+            array_walk_recursive($data, [$this, 'filterValue'], $filter);
+            reset($data);
+        } else {
+            $this->filterValue($data, $name, $filter);
+        }
+
+        return $data;
     }
 
     /**

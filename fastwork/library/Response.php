@@ -39,6 +39,12 @@ class Response
         return new static($request);
     }
 
+
+    public function setHttpResponse(\swoole_http_response $response)
+    {
+        $this->httpResponse = $response;
+    }
+
     /**
      * @param string $data
      * @param null|string $callback
@@ -122,15 +128,6 @@ class Response
         if (method_exists($this->httpResponse, $name)) {
             return $this->httpResponse->$name(...$arguments);
         }
-    }
-
-
-    /**
-     * @param mixed $httpResponse
-     */
-    public function setHttpResponse($httpResponse): void
-    {
-        $this->httpResponse = $httpResponse;
     }
 
     /**

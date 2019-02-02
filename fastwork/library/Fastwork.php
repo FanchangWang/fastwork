@@ -9,6 +9,8 @@
 namespace fastwork;
 
 
+use fastwork\exception\ClassNotFoundException;
+
 class Fastwork extends Container
 {
 
@@ -112,8 +114,7 @@ class Fastwork extends Container
         $protecl = isset($config['server']) && $config['server'] == 'websocket' ? 'WsHttpServer' : 'HttpServer';
         $class = __NAMESPACE__ . "\\swoole\\{$protecl}";
         if (!class_exists($class)) {
-            var_dump("class not exits:" . $class);
-            return;
+            throw new ClassNotFoundException("class not exits:" . $class);
         }
         $swoole = new $swoole_server($ip, $port);
         $swoole->set($config['set']);
@@ -123,7 +124,7 @@ class Fastwork extends Container
 
         $call = [];
         foreach ($methods as $method) {
-            if (strpos($method->class, __NAMESPACE__."\\swoole\\") === 0) {
+            if (strpos($method->class, __NAMESPACE__ . "\\swoole\\") === 0) {
                 if (substr($method->name, 0, 2) == 'on') {
                     $call[strtolower(substr($method->name, 2))] = $method->name;
                 }

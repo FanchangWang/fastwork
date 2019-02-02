@@ -23,11 +23,6 @@ class Controller
     protected $request;
 
     /**
-     * @var Response
-     */
-    protected $response = null;
-
-    /**
      * 需要传递的assgin值
      * @var array
      */

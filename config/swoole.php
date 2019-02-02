@@ -13,16 +13,22 @@ return [
     'ip' => '0.0.0.0',   //监听IP
     'port' => 9501,        //监听端口
     'server' => 'websocket',     //服务，可选 websocket 默认http
-    'app_path' => Env::get('app_path'), // 应用地址 如果开启了 'daemonize'=>true 必须设置（使用绝对路径）
-
     'set' => [            //配置参数  请查看  https://wiki.swoole.com/wiki/page/274.html
         'daemonize' => 0,
         'enable_static_handler' => APP_DEBUG,
         'document_root' => Env::get('root_path') . 'public',
         'worker_num' => 2,
-        'max_request' => 10000,
+        'max_request' => 10000, // 一个worker进程在处理完超过此数值的任务后将自动退出
         'task_worker_num' => 2,
+        'task_max_request' => 1000, // 一个task进程在处理完超过此数值的任务后将自动退出
+        'task_tmpdir' => Env::get('runtime_path') . 'task',
         'reload_async' => true,
+        //swoole的pid和日志配置
+        'pid_file' => Env::get('runtime_path') . 'swoole.pid',
+//        'log_file' => Env::get('runtime_path') . 'swoole.log',
+        //websocket心跳配置
+        'heartbeat_check_interval' => 20, // 此选项表示每隔多久轮循一次
+        'heartbeat_idle_time' => 60,
     ],
     'monitor' => [
         'timer' => 2000,  //定时器间隔时间，单位毫秒
@@ -32,7 +38,5 @@ return [
             Env::get('config_path'),
         ]
     ],
-    // 可以支持swoole的所有配置参数
-    'pid_file' => Env::get('runtime_path') . 'swoole.pid'
 
 ];
