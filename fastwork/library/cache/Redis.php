@@ -140,7 +140,7 @@ class Redis
      * 入池时间
      * @var
      */
-    protected $pushTime;
+    protected $pushTime = '';
     //新建时间
     protected $addPoolTime = '';
     //池状态
@@ -158,11 +158,18 @@ class Redis
 
         $this->config = array_merge($this->config, $config);
         $this->pool = new Channel($this->config['poolMax']);
+        /**
+         * 创建最小的连接池
+         */
+        if ($this->addPoolTime == '') {
+            $this->initMinPool();
+        }
     }
 
     public static function __make(Config $config)
     {
-        return new static($config->pull('cache'));
+        $redisConfig = $config->get('cache.redis');
+        return new static($redisConfig);
     }
 
     /**
@@ -181,8 +188,10 @@ class Redis
 
     /**
      * @出池
+     * @param null $create
+     * @return bool|mixed|\Swoole\Coroutine\Redis
      */
-    public function pop()
+    public function pop($create = null)
     {
         $re_i = -1;
         back:
@@ -192,7 +201,7 @@ class Redis
             return false;
         }
         //有空闲连接且连接池处于可用状态
-        if ($this->pool->length() > 0) {
+        if ($this->pool->length() > 0 && $create == null) {
             $redis = $this->pool->pop();
         } else {
             //无空闲连接，创建新连接
@@ -213,7 +222,7 @@ class Redis
         if ($redis->connected === true && $redis->errCode === 0) {
             return $redis;
         } else {
-            if ($re_i <= $this->config['poolMin']) {
+            if ($re_i <= $this->config['reconnect']) {
                 Log::alert("重连次数{$re_i}，[errCode：{$redis->errCode}，errMsg：{$redis->errMsg}]");
                 $redis->close();
                 unset($redis);
@@ -229,19 +238,63 @@ class Redis
      */
     public function clearTimer(\swoole_server $server)
     {
+
         $server->tick($this->config['clearTime'], function () use ($server) {
-            if ($this->pool->length() > $this->config['poolMin'] && time() - 5 > $this->addPoolTime) {
+            if ($this->pool->length() > $this->config['poolMin'] && time() - 10 > $this->addPoolTime) {
                 $this->pool->pop();
             }
-            if ($this->pool->length() > 0 && time() - $this->config['clearAll'] > $this->pushTime) {
+            if ($this->pool->length() > $this->config['poolMin'] && time() - $this->config['clearAll'] > $this->pushTime) {
                 while (!$this->pool->isEmpty()) {
+                    if ($this->pool->length() <= $this->config['poolMin']) {
+                        break;
+                    }
                     $this->pool->pop();
                 }
             }
         });
     }
 
+    /**
+     * 获取一个连接池
+     * @return mixed
+     */
+    public function getPool()
+    {
+        return $this->pool->pop();
+    }
 
+
+    public function setDefer($bool = true)
+    {
+        $this->config['setDefer'] = $bool;
+        return $this;
+    }
+
+    /**
+     * 销毁所有的redis连接池
+     */
+    public function destruct()
+    {
+        // 连接池销毁, 置不可用状态, 防止新的客户端进入常驻连接池, 导致服务器无法平滑退出
+        $this->available = false;
+        while (!$this->pool->isEmpty()) {
+            $this->pool->pop();
+        }
+    }
+
+    protected function initMinPool()
+    {
+        for ($i = 1; $i <= $this->config['poolMin']; $i++) {
+            $this->pool->push($this->pop(true));
+        }
+    }
+
+    /**
+     * 协程版本redis总调用
+     * @param $method
+     * @param $args
+     * @return mixed
+     */
     protected function query($method, $args)
     {
         $chan = new \chan(1);
@@ -260,24 +313,8 @@ class Redis
         }
     }
 
-
-    public function setDefer($bool = true)
-    {
-        $this->config['setDefer'] = $bool;
-        return $this;
-    }
-
     public function __call($method, $args)
     {
         return $this->query($method, $args);
-    }
-
-    public function destruct()
-    {
-        // 连接池销毁, 置不可用状态, 防止新的客户端进入常驻连接池, 导致服务器无法平滑退出
-        $this->available = false;
-        while (!$this->pool->isEmpty()) {
-            $this->pool->pop();
-        }
     }
 }
