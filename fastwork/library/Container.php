@@ -28,6 +28,7 @@ use ReflectionMethod;
  * @property Route $route
  * @property Error $error
  * @property Redis $redis
+ * @property Cache $cache
  */
 class Container implements \ArrayAccess, \Countable
 {
@@ -59,7 +60,8 @@ class Container implements \ArrayAccess, \Countable
         'log' => Log::class,
         'route' => Route::class,
         'error' => Error::class,
-        'redis' => Redis::class
+        'redis' => Redis::class,
+        'cache' => Cache::class
     ];
 
     /**

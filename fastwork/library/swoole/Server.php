@@ -45,27 +45,24 @@ class Server
 
     public function onStart(\swoole_server $server)
     {
+        date_default_timezone_set('Asia/Shanghai');
         $config = $this->conf;
         echo "swoole is start {$config['ip']}:{$config['port']}" . PHP_EOL;
     }
 
     public function onShutdown(\swoole_server $server)
     {
-
+        echo 'swoole on Shutdown' . PHP_EOL;
     }
 
     public function onWorkerStart(\swoole_server $server, $worker_id)
     {
-        date_default_timezone_set('Asia/Shanghai');
+        /* 初始化配置 */
+        $this->app = Container::get('fastwork');
         $this->lastMtime = time();
         $this->worker_id = $worker_id;
         $this->is_task = $server->taskworker ? true : false;
         $this->pid = $server->worker_pid;
-
-        /**
-         * 初始化配置
-         */
-        $this->app = Container::get('fastwork');
         $this->app->initialize();
         $this->app->swoole = $server;
 
@@ -83,17 +80,18 @@ class Server
 
     public function onWorkerStop(\swoole_server $server, $worker_id)
     {
-
+        echo 'swoole Worker on Stop' . PHP_EOL;
     }
 
     public function onWorkerExit(\swoole_server $server, $worker_id)
     {
-
+        echo 'swoole Worker on Exit' . PHP_EOL;
     }
 
     public function onWorkerError(\swoole_server $server, $worker_id, $worker_pid, $exit_code, $signal)
     {
-        Container::get('log')->record('SWOOLE', "进程异常", "WorkerID:{$worker_id}", "WorkerPID:{$worker_pid}", "ExitCode:{$exit_code}");
+        echo 'swoole Worker on Error' . PHP_EOL;
+        Log::record('SWOOLE', "进程异常 WorkerID:{$worker_id} WorkerPID:{$worker_pid}  ExitCode:{$exit_code}");
     }
 
     public function onPipeMessage(\swoole_server $server, $src_worker_id, $message)
@@ -108,17 +106,20 @@ class Server
 
     public function onManagerStop(\swoole_server $server)
     {
-
+        echo 'swoole Manager on stop' . PHP_EOL;
     }
 
     public function onTask($server, $task_id, $workder_id, $data)
     {
+        var_dump("onTask \n");
+        var_dump("task_id:{$task_id}, workder_id:{$workder_id} \n");
+        var_dump($data);
 
     }
 
     public function onFinish($server, $task_id, $data)
     {
-
+        var_dump('onTaskFinish:' . $task_id);
     }
 
     /**

@@ -66,50 +66,51 @@ use fastwork\Facade;
  * @method Redis brpoplpush(string $srcKey, string $detKey, int $timeout) static
  *
  * //set
- * @method Redis sAdd(string $key, string $value)
- * @method Redis sRem(string $key, string $value)
- * @method Redis sMove(string $srcKey, string $dstKey, string $value)
- * @method Redis sIsMember(string $key, string $value)
- * @method Redis sCard(string $key)
- * @method Redis sPop(string $key)
- * @method Redis sRandMember(string $key)
- * @method Redis sInter(string ... $keys)
- * @method Redis sInterStore(string $dstKey, string ... $srcKey)
- * @method Redis sUnion(string ... $keys)
- * @method Redis sUnionStore(string $dstKey, string ... $srcKey)
- * @method Redis sDiff(string ... $keys)
- * @method Redis sDiffStore(string $dstKey, string ... $srcKey)
- * @method Redis sMembers(string $key)
+ * @method Redis sAdd(string $key, string $value) static
+ * @method Redis sRem(string $key, string $value) static
+ * @method Redis sMove(string $srcKey, string $dstKey, string $value) static
+ * @method Redis sIsMember(string $key, string $value) static
+ * @method Redis sCard(string $key) static
+ * @method Redis sPop(string $key) static
+ * @method Redis sRandMember(string $key) static
+ * @method Redis sInter(string ... $keys) static
+ * @method Redis sInterStore(string $dstKey, string ... $srcKey) static
+ * @method Redis sUnion(string ... $keys) static
+ * @method Redis sUnionStore(string $dstKey, string ... $srcKey) static
+ * @method Redis sDiff(string ... $keys) static
+ * @method Redis sDiffStore(string $dstKey, string ... $srcKey) static
+ * @method Redis sMembers(string $key) static
  *
  * //zset
- * @method Redis zAdd(string $key, double $score, string $value)
- * @method Redis zRange(string $key, int $start, int $end)
- * @method Redis zDelete(string $key, string $value)
- * @method Redis zRevRange(string $key, int $start, int $end)
- * @method Redis zRangeByScore(string $key, int $start, int $end, array $options = [])
- * @method Redis zCount(string $key, int $start, int $end)
- * @method Redis zRemRangeByScore(string $key, int $start, int $end)
- * @method Redis zRemRangeByRank(string $key, int $start, int $end)
- * @method Redis zSize(string $key)
- * @method Redis zScore(string $key, string $value)
- * @method Redis zRank(string $key, string $value)
- * @method Redis zRevRank(string $key, string $value)
- * @method Redis zIncrBy(string $key, double $score, string $value)
+ * @method Redis zAdd(string $key, double $score, string $value) static
+ * @method Redis zRange(string $key, int $start, int $end) static
+ * @method Redis zDelete(string $key, string $value) static
+ * @method Redis zRevRange(string $key, int $start, int $end) static
+ * @method Redis zRangeByScore(string $key, int $start, int $end, array $options = []) static
+ * @method Redis zCount(string $key, int $start, int $end) static
+ * @method Redis zRemRangeByScore(string $key, int $start, int $end) static
+ * @method Redis zRemRangeByRank(string $key, int $start, int $end) static
+ * @method Redis zSize(string $key) static
+ * @method Redis zScore(string $key, string $value) static
+ * @method Redis zRank(string $key, string $value) static
+ * @method Redis zRevRank(string $key, string $value) static
+ * @method Redis zIncrBy(string $key, double $score, string $value) static
  *
- * //hash
- * @method Redis hSet(string $key, string $hashKey, string $value)
- * @method Redis hSetNx(string $key, string $hashKey, string $value)
- * @method Redis hGet(string $key, string $hashKey)
- * @method Redis hLen(string $key)
- * @method Redis hDel(string $key, string $hashKey)
- * @method Redis hKeys(string $key)
- * @method Redis hVals(string $key)
- * @method Redis hGetAll(string $key)
- * @method Redis hExists(string $key, string $hashKey)
- * @method Redis hIncrBy(string $key, string $hashKey, int $value)
- * @method Redis hIncrByFloat(string $key, string $hashKey, float $value)
- * @method Redis hMset(string $key, array $keyValue)
- * @method Redis hMGet(string $key, array $hashKeys)
+ * //Hash（哈希表）
+ * @method Redis hSet(string $key, string $hashKey, string $value) static
+ * @method Redis hSetNx(string $key, string $hashKey, string $value) static
+ * @method Redis hGet(string $key, string $hashKey) static
+ * @method Redis hLen(string $key) static
+ * @method Redis hDel(string $key, string $hashKey) static
+ * @method Redis hKeys(string $key) static
+ * @method Redis hVals(string $key) static
+ * @method Redis hGetAll(string $key) static
+ * @method Redis hExists(string $key, string $hashKey) static
+ * @method Redis hIncrBy(string $key, string $hashKey, int $value) static
+ * @method Redis hIncrByFloat(string $key, string $hashKey, float $value) static
+ * @method Redis hMset(string $key, array $keyValue) static
+ * @method Redis hMGet(string $key, array $hashKeys) static
+ *
  */
 
 class Redis extends Facade

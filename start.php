@@ -10,7 +10,7 @@ use fastwork\Container;
 
 require __DIR__ . '/vendor/autoload.php';
 
-define('APP_DEBUG', true);
+defined('APP_DEBUG') or define('APP_DEBUG', true);
 // 应用初始化
 $app_path = __DIR__ . '/app/';
 $app = Container::get('fastwork')->setAppPath($app_path);

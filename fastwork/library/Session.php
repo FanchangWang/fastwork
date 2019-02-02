@@ -9,6 +9,7 @@
 namespace fastwork;
 
 use fastwork\facades\Cookie as FastCookie;
+use fastwork\facades\Cache;
 
 class Session
 {
@@ -19,13 +20,16 @@ class Session
     protected $config = [];
 
     /**
-     * 前缀
+     * Cookie前缀
      * @var string
      */
-    protected $prefix = '';
-
     public $sessionName = 'sessid';
 
+    /**
+     * Cache的前缀
+     * @var string
+     */
+    protected $prefix = 'sessid_';
     /**
      * Session有效期
      * @var int
@@ -64,7 +68,7 @@ class Session
         $config = $config ?: $this->config;
 
         if (!empty($config['name'])) {
-            $this->sessionName = $config['name'];
+            $this->setSessionName($config['name']);
         }
 
         if (!empty($config['expire'])) {
@@ -101,7 +105,7 @@ class Session
      */
     public function getId()
     {
-        return FastCookie::get($this->sessionName) ?: '';
+        return FastCookie::get($this->getSessionName()) ?: '';
     }
 
     /**
@@ -113,58 +117,70 @@ class Session
      */
     public function setId($id, $expire = null)
     {
-        FastCookie::set($this->sessionName, $id, $expire);
+        FastCookie::set($this->getSessionName(), $id, $expire);
     }
 
     /**
-     * 设置或者获取session作用域（前缀）
-     * @access public
-     * @param  string $prefix
-     * @return string|void
+     * @return string
      */
-    public function prefix($prefix = '')
+    public function getPrefix(): string
+    {
+        return $this->prefix;
+    }
+
+    /**
+     * session获取
+     * @access public
+     * @param  string $name session名称
+     * @return mixed
+     */
+    public function get($name = '', $prefix = null)
     {
         empty($this->init) && $this->boot();
 
-        if (empty($prefix) && null !== $prefix) {
-            return $this->prefix;
-        } else {
-            $this->prefix = $prefix;
+        $sessionId = $this->getId();
+
+        if ($sessionId) {
+            return $this->readSession($sessionId, $name);
         }
     }
+
     /**
-     * session自动启动或者初始化
+     * session设置
+     * @access public
+     * @param  string $name session名称
+     * @param  mixed $value session值
+     * @return void
+     */
+    public function set($name, $value)
+    {
+        empty($this->init) && $this->boot();
+        $sessionId = $this->getId();
+        if (!$sessionId) {
+            $sessionId = $this->regenerate();
+        }
+        if ($sessionId) {
+            $this->setSession($sessionId, $name, $value);
+        }
+    }
+
+    /**
+     * 清空session数据
      * @access public
      * @return void
      */
-    public function boot()
+    public function clear()
     {
-        if (is_null($this->init)) {
-            $this->init();
-        }
+        empty($this->init) && $this->boot();
 
-        if (false === $this->init) {
-            $this->start();
+        $sessionId = $this->getId();
+
+        if ($sessionId) {
+            $this->destroySession($sessionId);
         }
     }
-    /**
-     * 生成session_id
-     * @access public
-     * @param  bool $delete 是否删除关联会话文件
-     * @return string
-     */
-    public function regenerate($delete = false)
-    {
-        if ($delete) {
-            $this->destroy();
-        }
 
-        $sessionId = sha1(microtime(true) . uniqid());
 
-        $this->setId($sessionId);
-
-        return $sessionId;
-    }
     /**
      * 销毁session
      * @access public
@@ -180,6 +196,237 @@ class Session
 
         $this->init = null;
     }
+
+
+    /**
+     * 判断session数据
+     * @access public
+     * @param  string $name session名称
+     * @return bool
+     */
+    public function has($name)
+    {
+        empty($this->init) && $this->boot();
+        $sessionId = $this->getId();
+
+        if ($sessionId) {
+            return $this->hasSession($sessionId, $name);
+        }
+
+        return false;
+    }
+
+    /**
+     * 删除session数据
+     * @access public
+     * @param  string|array $name session名称
+     * @return void
+     */
+    public function delete($name)
+    {
+        empty($this->init) && $this->boot();
+
+        $sessionId = $this->getId();
+
+        if ($sessionId) {
+            $data = $this->getSession($sessionId);
+            $redata = $this->deleteSession($sessionId, $name, $data);
+            // 持久化session数据
+            $this->writeSessionData($sessionId, $redata);
+        }
+    }
+
+    /**
+     * session获取并删除
+     * @access public
+     * @param  string $name session名称
+     * @param  string|null $prefix 作用域（前缀）
+     * @return mixed
+     */
+    public function pull($name, $prefix = null)
+    {
+        $result = $this->get($name, $prefix);
+
+        if ($result) {
+            $this->delete($name, $prefix);
+            return $result;
+        } else {
+            return;
+        }
+    }
+
+    /**
+     * 添加数据到一个session数组
+     * @access public
+     * @param  string $key
+     * @param  mixed $value
+     * @return void
+     */
+    public function push($key, $value)
+    {
+        $array = $this->get($key);
+
+        if (is_null($array)) {
+            $array = [];
+        }
+
+        $array[] = $value;
+
+        $this->set($key, $array);
+    }
+
+    /**
+     * 删除session数据
+     * @access protected
+     * @param  string $sessionId session_id
+     * @param  string|array $name session名称
+     * @return void
+     */
+    protected function deleteSession($sessionId, $name, $data)
+    {
+        if (is_array($name)) {
+            foreach ($name as $key) {
+                $this->deleteSession($sessionId, $key, $data);
+            }
+        } elseif (strpos($name, '.')) {
+            list($name1, $name2) = explode('.', $name);
+            unset($data[$name1][$name2]);
+        } else {
+            unset($data[$name]);
+        }
+
+        return $data;
+    }
+
+    /**
+     * session设置
+     * @access protected
+     * @param  string $sessionId session_id
+     * @param  string $name session名称
+     * @param  mixed $value session值
+     * @return void
+     */
+
+    protected function setSession($sessionId, $name, $value)
+    {
+        $data = $this->getSession($sessionId);
+        if (strpos($name, '.')) {
+            // 二维数组赋值
+            list($name1, $name2) = explode('.', $name);
+            $data[$name1][$name2] = $value;
+        } else {
+            $data[$name] = $value;
+        }
+
+        // 持久化session数据
+        $this->writeSessionData($sessionId, $data);
+    }
+
+    protected function writeSessionData($sessionId, $data)
+    {
+        Cache::set($this->getPrefix() . $sessionId, $data, $this->expire);
+    }
+
+
+    /**
+     * 从内存里读取session
+     * @return mixed|null|void
+     */
+    protected function getSession($sessionId)
+    {
+        return Cache::get($this->getPrefix() . $sessionId);
+    }
+
+    /**
+     * session获取
+     * @access protected
+     * @param  string $sessionId session_id
+     * @param  string $name session名称
+     * @return mixed
+     */
+    protected function readSession($sessionId, $name = '')
+    {
+        $value = !empty($this->getSession($sessionId)) ? $this->getSession($sessionId) : [];
+
+        if (!is_array($value)) {
+            $value = [];
+        }
+
+        if ('' != $name) {
+            $name = explode('.', $name);
+
+            foreach ($name as $val) {
+                if (isset($value[$val])) {
+                    $value = $value[$val];
+                } else {
+                    $value = null;
+                    break;
+                }
+            }
+        }
+
+        return $value;
+    }
+
+
+    /**
+     * 判断session数据
+     * @access protected
+     * @param  string $sessionId session_id
+     * @param  string $name session名称
+     * @return bool
+     */
+    protected function hasSession($sessionId, $name)
+    {
+        $value = !empty($this->getSession($sessionId)) ? $this->getSession($sessionId) : [];
+
+        $name = explode('.', $name);
+
+        foreach ($name as $val) {
+            if (!isset($value[$val])) {
+                return false;
+            } else {
+                $value = $value[$val];
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * session自动启动或者初始化
+     * @access public
+     * @return void
+     */
+    public function boot()
+    {
+        if (is_null($this->init)) {
+            $this->init();
+        }
+
+        if (false === $this->init) {
+            $this->start();
+        }
+    }
+
+    /**
+     * 生成session_id
+     * @access public
+     * @param  bool $delete 是否删除关联会话文件
+     * @return string
+     */
+    public function regenerate($delete = false)
+    {
+        if ($delete) {
+            $this->destroy();
+        }
+        $sessionId = sha1(microtime(true) . uniqid());
+
+        $this->setId($sessionId);
+
+        return $sessionId;
+    }
+
     /**
      * 销毁session
      * @access protected
@@ -188,11 +435,35 @@ class Session
      */
     protected function destroySession($sessionId)
     {
-        Cache::rm('sess_' . $sessionId);
-    }
-    public function name($name)
-    {
-        $this->sessionName = $name;
+
+        Cache::rm($this->getPrefix() . $sessionId);
+
     }
 
+    /**
+     * @param string $sessionName
+     */
+    public function setSessionName(string $sessionName): void
+    {
+        $this->sessionName = $sessionName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSessionName(): string
+    {
+        return $this->sessionName;
+    }
+
+
+    /**
+     * 暂停session
+     * @access public
+     * @return void
+     */
+    public function pause()
+    {
+        $this->init = false;
+    }
 }
