@@ -110,7 +110,6 @@ class Redis
                 'serialize' => $this->config['serialize'],
                 'reconnect' => $this->config['reconnect']
             ]);
-
             $redis->connect($this->config['host'], $this->config['port']);
 
             if (!empty($this->config['auth'])) {

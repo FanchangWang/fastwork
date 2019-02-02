@@ -25,7 +25,7 @@ return [
         'reload_async' => true,
         //swoole的pid和日志配置
         'pid_file' => Env::get('runtime_path') . 'swoole.pid',
-//        'log_file' => Env::get('runtime_path') . 'swoole.log',
+        'log_file' => Env::get('runtime_path') . 'swoole.log',
         //websocket心跳配置
         'heartbeat_check_interval' => 20, // 此选项表示每隔多久轮循一次
         'heartbeat_idle_time' => 60,

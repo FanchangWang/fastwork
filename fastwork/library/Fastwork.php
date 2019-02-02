@@ -116,6 +116,9 @@ class Fastwork extends Container
         if (!class_exists($class)) {
             throw new ClassNotFoundException("class not exits:" . $class);
         }
+        if (APP_DEBUG == true) {
+            unset($config['log_file']);
+        }
         $swoole = new $swoole_server($ip, $port);
         $swoole->set($config['set']);
 
