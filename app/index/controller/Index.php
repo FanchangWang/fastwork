@@ -10,6 +10,7 @@ namespace app\index\controller;
 
 
 use fastwork\Controller;
+use fastwork\facades\Cache;
 use fastwork\facades\Redis;
 use fastwork\Request;
 
@@ -21,7 +22,7 @@ class Index extends Controller
         $date['start'] = microtime(true);
         for ($i=1;$i<10;$i++){
             go(function ()use ($i){
-                Redis::setDefer(false)->set('redis_'.$i,1);
+                Cache::setDefer(false)->set('redis_'.$i,1);
             });
         }
         $date['end'] = microtime(true);

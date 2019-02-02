@@ -15,7 +15,7 @@ return [
         'port' => 6379,
         'prefix' => 'mzhua_',
         //清除空闲链接的定时器，默认120s
-        'clearTime' => 60 * 1000,
+        'clearTime' => 60 ,
         //空闲多久清空所有连接,默认300s
         'clearAll' => 300,
         //设置是否返回结果

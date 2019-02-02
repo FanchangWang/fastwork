@@ -148,14 +148,9 @@ class Redis
 
     public function __construct($config)
     {
-        if (isset($config['clearAll'])) {
-            if ($config['clearAll'] < $config['clearTime']) {
-                $config['clearAll'] = (int)($config['clearTime'] / 1000);
-            } else {
-                $config['clearAll'] = (int)($config['clearAll'] / 1000);
-            }
+        if ($config['clearAll'] < $config['clearTime']) {
+            $config['clearAll'] = $config['clearTime'];
         }
-
         $this->config = array_merge($this->config, $config);
         $this->pool = new Channel($this->config['poolMax']);
         /**
@@ -239,7 +234,7 @@ class Redis
     public function clearTimer(\swoole_server $server)
     {
 
-        $server->tick($this->config['clearTime'], function () use ($server) {
+        $server->tick($this->config['clearTime'] * 1000, function () use ($server) {
             if ($this->pool->length() > $this->config['poolMin'] && time() - 10 > $this->addPoolTime) {
                 $this->pool->pop();
             }

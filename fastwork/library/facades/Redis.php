@@ -14,9 +14,11 @@ use fastwork\Facade;
 /**
  * Class Redis
  * @see \fastwork\cache\Redis
- * @method Redis push(object $redis) static
- * @method Redis pop(object $redis) static
- * @method Redis setDefer(bool $bool=true) static
+ *
+ * @method Redis instance(); static 获取一个连接池
+ * @method Redis push(object $redis) static 往连接池放入一个连接
+ * @method Redis pop() static 获取一个连接池，没有就创建一个
+ * @method Redis setDefer(bool $bool=true) static 是否立刻返回结果
  *
  * //base
  * @method Redis expire(string $key, int $ttl) static
