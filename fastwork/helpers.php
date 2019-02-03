@@ -118,8 +118,8 @@ if (!function_exists('env')) {
     /**
      * 获取环境变量值
      * @access public
-     * @param  string    $name 环境变量名（支持二级 .号分割）
-     * @param  string    $default  默认值
+     * @param  string $name 环境变量名（支持二级 .号分割）
+     * @param  string $default 默认值
      * @return mixed
      */
     function env($name = null, $default = null)
@@ -130,9 +130,9 @@ if (!function_exists('env')) {
 if (!function_exists('cookie')) {
     /**
      * Cookie管理
-     * @param string|array  $name cookie名称，如果为数组表示进行cookie设置
-     * @param mixed         $value cookie值
-     * @param mixed         $option 参数
+     * @param string|array $name cookie名称，如果为数组表示进行cookie设置
+     * @param mixed $value cookie值
+     * @param mixed $option 参数
      * @return mixed
      */
     function cookie($name, $value = '', $option = null)
@@ -155,14 +155,17 @@ if (!function_exists('cookie')) {
 /**
  * 统一格式json输出
  */
-function format_json($data, $code, $id)
+function format_json($data, $code, $id = null)
 {
-    $arr = ['code' => $code, 'request_id' => $id];
+    $arr = ['code' => $code];
     if ($code) {
         $arr['msg'] = $data;
     } else {
         $arr['msg'] = '';
         $arr['data'] = $data;
+    }
+    if ($id) {
+
     }
     return json_encode($arr, JSON_UNESCAPED_UNICODE);
 }

@@ -73,9 +73,6 @@ class Server
         }
         $this->saveLogs($server);
         if (!$this->is_task) {
-            /**
-             * 每一个work都存日志
-             */
             $this->app->redis->clearTimer($server);
         }
     }

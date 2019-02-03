@@ -77,7 +77,6 @@ class HttpServer extends Server
         }
         // 发送Header
         foreach ($this->app->response->getHeader() as $key => $val) {
-            var_dump($key.$val);
             $response->header($key, $val);
         }
         //改进对验证码和图片输出的支持

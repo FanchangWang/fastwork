@@ -16,14 +16,14 @@ class Log
      * 配置参数
      * @var array
      */
-    private static $config = [];
+    private $config = [];
 
     private static $logs = [];
 
     public function __construct(Config $config)
     {
 
-        self::$config = $config->pull('log');
+        $this->config = $config->pull('log');
     }
 
     public static function __make(Config $config)
@@ -45,7 +45,7 @@ class Log
             $params = var_export($params, true);
         }
         $msg = "{$type} \t " . date("Y-m-d h:i:s") . " \t " . $params;
-        if (!in_array($type, self::$config['level'])) return false;
+        if (!in_array($type, $this->config['level'])) return false;
         self::$logs[$type][] = $msg;
     }
 

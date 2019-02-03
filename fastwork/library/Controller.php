@@ -10,9 +10,11 @@ namespace fastwork;
 
 
 use fastwork\exception\FileNotFoundException;
+use traits\JsonResult;
 
 class Controller
 {
+    use JsonResult;
     /**
      * @var Fastwork
      */
@@ -22,6 +24,7 @@ class Controller
      */
     protected $request;
 
+    private $response;
     /**
      * 需要传递的assgin值
      * @var array
@@ -46,7 +49,7 @@ class Controller
      * @param $url
      * @return string
      */
-    public function redirect($url)
+    protected function redirect($url)
     {
         return $this->response->redirect($url, 302);
     }
@@ -56,7 +59,7 @@ class Controller
      * @param $val
      * @return Controller
      */
-    public function assign($key, $val)
+    protected function assign($key, $val)
     {
         $this->assign[$key] = $val;
         return $this;
@@ -69,7 +72,7 @@ class Controller
      * @return string
      * @throws \HttpResponseException
      */
-    public function fetch($file = null, $var = [])
+    protected function fetch($file = null, $var = [])
     {
         $module = $this->request->module();
         $controller = $this->request->controller();
@@ -89,17 +92,23 @@ class Controller
                 $action = $file;
             }
         }
-
         $ext = $this->app->env->get('config_ext', '.php');
-
         $path = $this->app->env->get('app_path') . $module . '/view/' . ucfirst($controller) . '/' . $action . $ext;
         if (!is_file($path)) {
             throw new FileNotFoundException("template not exist: " . $path);
         }
+        $assign = $this->getAssign();
         if (!empty($var)) {
-            $this->assign = array_merge($this->assign, $var);
+            $assign = array_merge($assign, $var);
         }
-        return $this->response->tpl($this->assign, $path);
+        return $this->response->tpl($assign, $path);
+    }
+
+    private function getAssign()
+    {
+        $assign = $this->assign;
+        $this->assign = [];
+        return $assign;
     }
 
     public function __destruct()

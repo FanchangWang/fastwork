@@ -79,15 +79,16 @@ class Response
     /**
      * 设置cookie
      * @param mixed ...$args
+     * @return mixed
      */
     public function cookie(...$args)
     {
-        $this->httpResponse->cookie(...$args);
+        return $this->httpResponse->cookie(...$args);
     }
 
     public function code($code)
     {
-        $this->httpResponse->status($code);
+        return $this->httpResponse->status($code);
     }
 
     /**
@@ -111,18 +112,13 @@ class Response
      */
     public function tpl(array $data = [], $file)
     {
-        if ($this->httpRequest->isJson()) {
-            $this->header('Content-type', 'application/json');
-            return format_json($data, 1, $this->httpRequest->id());
-        } else {
-            if (!file_exists($file)) {
-                throw new FileNotFoundException('未定义模板路径:' . $file, 404);
-            }
-            ob_start();
-            extract($data);
-            require $file;
-            return ob_get_clean();
+        if (!file_exists($file)) {
+            throw new FileNotFoundException('未定义模板路径:' . $file, 404);
         }
+        ob_start();
+        extract($data);
+        require $file;
+        return ob_get_clean();
     }
 
     public function __call($name, $arguments)
