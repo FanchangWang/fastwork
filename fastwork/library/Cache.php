@@ -69,6 +69,17 @@ class Cache
     }
 
     /**
+     * 是否立即返回数据
+     * @param bool $status
+     * @return Cache
+     */
+    public function setDefer($status = true)
+    {
+        $this->redis->setDefer($status);
+        return $this;
+    }
+
+    /**
      * 写入缓存
      * @access public
      * @param  string $name 缓存变量名

@@ -11,21 +11,28 @@ namespace app\index\controller;
 
 use fastwork\Controller;
 use fastwork\facades\Cache;
-use fastwork\facades\Redis;
-use fastwork\Request;
 
 class Index extends Controller
 {
 
-    public function index(Request $request)
+    public function index()
     {
         $date['start'] = microtime(true);
-        for ($i=1;$i<10;$i++){
-            go(function ()use ($i){
-                Cache::setDefer(false)->set('redis_'.$i,1);
-            });
+        for ($i = 1; $i < 100; $i++) {
+            Cache::set('redis_' . $i, $i);
+            echo $i . PHP_EOL;
         }
+        go(function () {
+            echo '1' . PHP_EOL;
+        });
+
+        go(function () {
+            sleep(1);
+            echo '2' . PHP_EOL;
+        });
+        echo '3'.PHP_EOL;
         $date['end'] = microtime(true);
+        $date['more'] = bcsub($date['end'], $date['start'], 10);
         return $date;
     }
 }

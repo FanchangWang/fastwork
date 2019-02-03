@@ -14,6 +14,8 @@ return [
         'auth' => '', //密码
         'port' => 6379,
         'prefix' => 'mzhua_',
+        // 缓存有效期 0表示永久缓存
+        'expire' => 0,
         //清除空闲链接的定时器，默认120s
         'clearTime' => 60 ,
         //空闲多久清空所有连接,默认300s
@@ -23,6 +25,7 @@ return [
         //options配置
         'connect_timeout' => 2, //连接超时时间，默认为1s
         'timeout' => 5, //超时时间，默认为1s
+        //是否序列化
         'serialize' => true, //自动序列化，默认false
         'reconnect' => 2  //自动连接尝试次数，默认为1次
     ]

@@ -11,7 +11,6 @@ namespace fastwork\cache;
 
 use fastwork\Config;
 use fastwork\exception\RedisNotAvailableException;
-use fastwork\facades\Log;
 use Swoole\Coroutine\Channel;
 
 /**
@@ -218,8 +217,7 @@ class Redis
             return $redis;
         } else {
             if ($re_i <= $this->config['reconnect']) {
-                Log::alert("重连次数{$re_i}，[errCode：{$redis->errCode}，errMsg：{$redis->errMsg}]");
-                $redis->close();
+//                Log::alert("重连次数{$re_i}，[errCode：{$redis->errCode}，errMsg：{$redis->errMsg}]");
                 unset($redis);
                 goto back;
             }

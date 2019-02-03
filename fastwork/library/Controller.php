@@ -74,14 +74,25 @@ class Controller
         $module = $this->request->module();
         $controller = $this->request->controller();
         $action = $this->request->action();
-        $param = explode('/', $file, 3);
-        !empty($param[0]) && $module = $param[0];
-        isset($param[1]) && $controller = $param[1];
-        isset($param[2]) && $action = $param[2];
+        if (strpos($file, '/') !== false) {
+            $param = explode('/', $file, 3);
+            if (count($param) == 2) {
+                $controller = $param[0];
+                $action = $param[1];
+            } else {
+                $module = $param[0];
+                $controller = $param[1];
+                $action = $param[2];
+            }
+        } else {
+            if (!is_null($file)) {
+                $action = $file;
+            }
+        }
 
         $ext = $this->app->env->get('config_ext', '.php');
 
-        $path = $this->app->env->get('app_path') . $module . '/view/' . $controller . '/' . $action . $ext;
+        $path = $this->app->env->get('app_path') . $module . '/view/' . ucfirst($controller) . '/' . $action . $ext;
         if (!is_file($path)) {
             throw new FileNotFoundException("template not exist: " . $path);
         }

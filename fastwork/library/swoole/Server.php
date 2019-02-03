@@ -80,7 +80,7 @@ class Server
 
     public function onWorkerStop(\swoole_server $server, $worker_id)
     {
-        echo 'swoole Worker on Stop' . PHP_EOL;
+
     }
 
     public function onWorkerExit(\swoole_server $server, $worker_id)

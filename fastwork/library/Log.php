@@ -58,9 +58,9 @@ class Log
         if (empty(self::$logs)) return false;
         $path = Env::get('runtime_path');
         foreach (self::$logs as $type => $logs) {
-            $dir_path = $path . 'log/' . date('Ymd') . DIRECTORY_SEPARATOR;
+            $dir_path = $path . 'log/' . date('Ym') . DIRECTORY_SEPARATOR;
             !is_dir($dir_path) && mkdir($dir_path, 0777, TRUE);
-            $filename = $type . '.log';
+            $filename = date('d') . '_' . $type . '.log';
             $content = NULL;
             foreach ($logs as $log) {
                 $content .= $log . PHP_EOL;
