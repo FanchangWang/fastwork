@@ -153,12 +153,6 @@ class Redis
         }
         $this->config = array_merge($this->config, $config);
         $this->pool = new Channel($this->config['poolMax']);
-        /**
-         * 创建最小的连接池
-         */
-        if ($this->addPoolTime == '') {
-            $this->initMinPool();
-        }
     }
 
     public static function __make(Config $config)
@@ -236,7 +230,7 @@ class Redis
             if ($this->pool->length() > $this->config['poolMin'] && time() - 10 > $this->addPoolTime) {
                 $this->pool->pop();
             }
-            if ($this->pool->length() > $this->config['poolMin'] && time() - $this->config['clearAll'] > $this->pushTime) {
+            if ($this->pool->length() > 0 && time() - $this->config['clearAll'] > $this->pushTime) {
                 while (!$this->pool->isEmpty()) {
                     if ($this->pool->length() <= $this->config['poolMin']) {
                         break;
@@ -274,15 +268,6 @@ class Redis
         while (!$this->pool->isEmpty()) {
             $this->pool->pop();
         }
-    }
-
-    protected function initMinPool()
-    {
-        go(function () {
-            for ($i = 1; $i <= $this->config['poolMin']; $i++) {
-                $this->pool->push($this->pop(true));
-            }
-        });
     }
 
     /**
