@@ -26,7 +26,7 @@ class Controller
      * 需要传递的assgin值
      * @var array
      */
-    protected $assign = [];
+    private $assign = [];
 
     public function __construct(Fastwork $app)
     {

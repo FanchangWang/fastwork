@@ -67,24 +67,26 @@ class HttpServer extends Server
             $content = $this->app->invokeMethod([$reflect->newInstanceArgs($args), $action], $param);
         } catch (HttpRuntimeException $exception) {
             $content = Error::render($this->app->response, $exception);
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             $content = Error::render($this->app->response, $exception);
         } catch (\Throwable $exception) {
             Error::report($exception);
         }
-
         if (is_array($content)) {
             $content = $this->app->response->json($content);
         }
         // 发送Header
         foreach ($this->app->response->getHeader() as $key => $val) {
+            var_dump($key.$val);
             $response->header($key, $val);
         }
         //改进对验证码和图片输出的支持
         if (!empty($content)) {
             $response->write($content);
         }
+        //清除响应头
+        $this->app->response->clear();
+        //返回响应
         return $response->end();
-        $response->end(json_encode($request));
     }
 }

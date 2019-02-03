@@ -98,7 +98,9 @@ class Response
      */
     public function redirect($url, $code = 302)
     {
-        $this->httpResponse->redirect($url, $code);
+        $this->header('Cache-control', 'no-cache,must-revalidate');
+        $this->header("Location", $url);
+        $this->code($code);
     }
 
     /**
@@ -144,5 +146,18 @@ class Response
     public function getHeader(): array
     {
         return $this->header;
+    }
+
+    /**
+     * 清除响应头
+     */
+    public function clear()
+    {
+        while (true) {
+            if (count($this->header) <= 1) {
+                break;
+            }
+            array_pop($this->header);
+        }
     }
 }
