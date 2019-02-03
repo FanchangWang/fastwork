@@ -47,11 +47,12 @@ class Controller
     /**
      * 跳转
      * @param $url
+     * @param int $code
      * @return string
      */
-    protected function redirect($url)
+    protected function redirect($url, $code = 302)
     {
-        return $this->response->redirect($url, 302);
+        return $this->response->redirect($url, $code);
     }
 
     /**

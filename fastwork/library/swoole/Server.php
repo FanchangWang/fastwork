@@ -71,8 +71,8 @@ class Server
         if (0 == $worker_id) {
             $this->monitor($server);
         }
-        $this->saveLogs($server);
         if (!$this->is_task) {
+            $this->app->log->clearTimer($server);
             $this->app->redis->clearTimer($server);
         }
     }
@@ -142,21 +142,6 @@ class Server
     {
         var_dump('onTaskFinish:' . $task_id);
     }
-
-    /**
-     * 同步日志
-     * @param \swoole_server $server
-     * @throws \ReflectionException
-     * @throws \fastwork\exception\ClassNotFoundException
-     */
-    protected function saveLogs(\swoole_server $server)
-    {
-        $log_save_time = Container::get('config')->get('log.save_time');
-        $server->tick($log_save_time, function () {
-            Log::save();
-        });
-    }
-
 
     /**
      * 文件监控

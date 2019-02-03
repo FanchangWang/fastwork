@@ -49,7 +49,7 @@ class HttpServer extends Server
         $content = '';
         try {
             if (!class_exists($classname)) {
-                throw  new  ClassNotFoundException('class not exit:' . $classname);
+                throw  new  ClassNotFoundException('class not exit:' . "{$classname}");
             }
             $reflect = new \ReflectionClass($classname);
             $constructor = $reflect->getConstructor();
@@ -58,11 +58,14 @@ class HttpServer extends Server
                 $args = $this->app->bindParams($constructor, []);
             }
             if (!$reflect->hasMethod($action)) {
-                throw new MethodNotFoundException('method not exit:' . $action);
+                $action = '_empty';
+                if (!$reflect->hasMethod('_empty')) {
+                    throw new MethodNotFoundException('method not exit:' . $action);
+                }
             }
             $method = $reflect->getMethod($action);
             if (!$method->isPublic()) {
-                throw new MethodNotFoundException('method not exit:' . "\\{$module}\\{$controller}\\{$action}");
+                throw new MethodNotFoundException('method not exit:' . " {$action}");
             }
             $content = $this->app->invokeMethod([$reflect->newInstanceArgs($args), $action], $param);
         } catch (HttpRuntimeException $exception) {

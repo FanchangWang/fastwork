@@ -59,16 +59,29 @@ class Log
         $path = Env::get('runtime_path');
         foreach (self::$logs as $type => $logs) {
             $dir_path = $path . 'log/' . date('Ym') . DIRECTORY_SEPARATOR;
-            !is_dir($dir_path) && mkdir($dir_path, 0777, TRUE);
+            !is_dir($dir_path) && @mkdir($dir_path, 0777, TRUE);
             $filename = date('d') . '_' . $type . '.log';
             $content = NULL;
             foreach ($logs as $log) {
                 $content .= $log . PHP_EOL;
             }
-            swoole_async_writefile($dir_path . $filename, $content, NULL, FILE_APPEND);
+            $filepath = $dir_path . $filename;
+            swoole_async_writefile($filepath, $content, NULL, FILE_APPEND);
         }
         self::$logs = [];
         return true;
+    }
+
+    /**
+     * 定时保存日志
+     * @param \swoole_server $server
+     */
+    public function clearTimer(\swoole_server $server)
+    {
+        $log_save_time = isset($this->config['save_time']) ? $this->config['save_time'] : 3000;
+        $server->tick($log_save_time, function () {
+            $this->save();
+        });
     }
 
     /**

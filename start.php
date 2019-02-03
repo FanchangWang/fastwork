@@ -10,7 +10,7 @@ use fastwork\Container;
 
 require __DIR__ . '/vendor/autoload.php';
 
-define('APP_DEBUG', true);
+define('APP_DEBUG', false);
 // 检测swoole版本
 if (version_compare(swoole_version(), '4.2.12', '<')) {
     exit("\e[41m swoole version is less than 4.2.12 \e[0m" . PHP_EOL);

@@ -16,6 +16,6 @@ class Index extends Controller
 
     public function index()
     {
-        return $this->response->redirect('/h1', 301);
+        return 1111;
     }
 }

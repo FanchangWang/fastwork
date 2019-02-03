@@ -17,7 +17,9 @@ class Response
      * @var array 响应头
      */
     protected $header = [
-        'Content-type' => 'text/html;charset=utf-8'
+        'content-type' => 'text/html;charset=utf-8',
+        'renderer' => 'webkit',
+        'x-ua-compatible' => 'IE=edge,chrome=1'
     ];
     /**
      * @var Request
@@ -52,7 +54,7 @@ class Response
      */
     public function json($data, $callback = null)
     {
-        $this->header('Content-type', 'application/json');
+        $this->header('content-type', 'application/json');
         if ($callback) {
             return $callback . '(' . $data . ')';
         } else {
@@ -71,7 +73,7 @@ class Response
      */
     public function header($key, $val)
     {
-        $key = ucfirst($key);
+        $key = strtolower($key);
         $this->header[$key] = $val;
         return $this;
     }
@@ -149,11 +151,6 @@ class Response
      */
     public function clear()
     {
-        while (true) {
-            if (count($this->header) <= 1) {
-                break;
-            }
-            array_pop($this->header);
-        }
+        $this->header('content-type', 'text/html;charset=utf-8');
     }
 }
