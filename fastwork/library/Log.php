@@ -41,7 +41,7 @@ class Log
     public function record($type, $params)
     {
         $type = strtoupper($type);
-        if (is_array($params)) {
+        if (!is_string($params)) {
             $params = var_export($params, true);
         }
         $msg = "{$type} \t " . date("Y-m-d h:i:s") . " \t " . $params;
@@ -55,20 +55,21 @@ class Log
      */
     public function save()
     {
-        if (empty(self::$logs)) return false;
-        $path = Env::get('runtime_path');
-        foreach (self::$logs as $type => $logs) {
+        if (!empty(self::$logs)) {
+            $path = Env::get('runtime_path');
             $dir_path = $path . 'log/' . date('Ym') . DIRECTORY_SEPARATOR;
             !is_dir($dir_path) && @mkdir($dir_path, 0777, TRUE);
-            $filename = date('d') . '_' . $type . '.log';
-            $content = NULL;
-            foreach ($logs as $log) {
-                $content .= $log . PHP_EOL;
+            foreach (self::$logs as $type => $logs) {
+                $filename = date('d') . '_' . $type . '.log';
+                $filepath = $dir_path . $filename;
+                $content = NULL;
+                foreach ($logs as $log) {
+                    $content .= $log . PHP_EOL;
+                }
+                swoole_async_writefile($filepath, $content, NULL, FILE_APPEND);
             }
-            $filepath = $dir_path . $filename;
-            swoole_async_writefile($filepath, $content, NULL, FILE_APPEND);
+            self::$logs = [];
         }
-        self::$logs = [];
         return true;
     }
 
