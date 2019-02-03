@@ -22,9 +22,11 @@ class Server
      */
     protected $server = null;
 
-    public $worker_id = 0;
+    /**
+     * 是否是task线程
+     * @var bool
+     */
     public $is_task = false;
-    public $pid = 0;
     /**
      * 文件最后修改时间
      * @var
@@ -60,9 +62,7 @@ class Server
         /* 初始化配置 */
         $this->app = Container::get('fastwork');
         $this->lastMtime = time();
-        $this->worker_id = $worker_id;
         $this->is_task = $server->taskworker ? true : false;
-        $this->pid = $server->worker_pid;
         $this->app->initialize();
         $this->app->swoole = $server;
         /**

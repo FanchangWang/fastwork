@@ -10,12 +10,15 @@ namespace app\index\controller;
 
 
 use fastwork\Controller;
+use fastwork\facades\Redis;
 
 class Index extends Controller
 {
 
     public function index()
     {
-        return 1111;
+        for ($i = 1; $i <= 10; $i++) {
+            Redis::set('de_' . $i, $i ,300);
+        }
     }
 }
