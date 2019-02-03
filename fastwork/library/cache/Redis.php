@@ -11,6 +11,7 @@ namespace fastwork\cache;
 
 use fastwork\Config;
 use fastwork\exception\RedisNotAvailableException;
+use Swoole\Coroutine;
 use Swoole\Coroutine\Channel;
 
 /**
@@ -217,7 +218,6 @@ class Redis
             return $redis;
         } else {
             if ($re_i <= $this->config['reconnect']) {
-//                Log::alert("重连次数{$re_i}，[errCode：{$redis->errCode}，errMsg：{$redis->errMsg}]");
                 unset($redis);
                 goto back;
             }
@@ -249,6 +249,7 @@ class Redis
 
     /**
      * 获取一个连接池
+     * 必须用在Go协程里面才可以
      * @return mixed
      */
     public function getPool()
@@ -277,9 +278,11 @@ class Redis
 
     protected function initMinPool()
     {
-        for ($i = 1; $i <= $this->config['poolMin']; $i++) {
-            $this->pool->push($this->pop(true));
-        }
+        go(function () {
+            for ($i = 1; $i <= $this->config['poolMin']; $i++) {
+                $this->pool->push($this->pop(true));
+            }
+        });
     }
 
     /**

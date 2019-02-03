@@ -15,22 +15,6 @@ class Cache
 {
 
     protected $redis;
-    /**
-     * 缓存读取次数
-     * @var integer
-     */
-    protected $readTimes = 0;
-
-    /**
-     * 缓存写入次数
-     * @var integer
-     */
-    protected $writeTimes = 0;
-    /**
-     * 缓存标签
-     * @var string
-     */
-    protected $tag;
 
     public function __construct(Redis $redis)
     {
@@ -57,8 +41,6 @@ class Cache
      */
     public function get($name, $default = false)
     {
-        $this->readTimes++;
-
         $value = $this->redis->get($this->getCacheKey($name));
 
         if (is_null($value) || false === $value) {
@@ -89,7 +71,6 @@ class Cache
      */
     public function set($name, $value, $expire = null)
     {
-        $this->writeTimes++;
 
         if (is_null($expire)) {
             $expire = $this->redis->config['expire'];
@@ -127,7 +108,6 @@ class Cache
      */
     public function inc($name, $step = 1)
     {
-        $this->writeTimes++;
 
         $key = $this->getCacheKey($name);
 
@@ -143,8 +123,6 @@ class Cache
      */
     public function dec($name, $step = 1)
     {
-        $this->writeTimes++;
-
         $key = $this->getCacheKey($name);
 
         return $this->redis->decrby($key, $step);
@@ -158,8 +136,6 @@ class Cache
      */
     public function rm($name)
     {
-        $this->writeTimes++;
-
         return $this->redis->delete($this->getCacheKey($name));
     }
 
@@ -184,13 +160,11 @@ class Cache
     /**
      * 清除缓存
      * @access public
-     * @param  string $tag 标签名
-     * @return boolean
+     * @return \Redis
      */
     public function clear()
     {
-        $this->writeTimes++;
-        $keys = $this->redis->keys($this->getCacheKey());
+        $keys = $this->redis->keys($this->getCacheKey() . '*');
         return $this->redis->delete($keys);
     }
 

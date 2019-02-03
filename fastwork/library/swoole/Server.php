@@ -65,22 +65,28 @@ class Server
         $this->pid = $server->worker_pid;
         $this->app->initialize();
         $this->app->swoole = $server;
-
         /**
          * 定时监控
          */
         if (0 == $worker_id) {
             $this->monitor($server);
         }
+        $this->saveLogs($server);
         if (!$this->is_task) {
-            $this->saveLogs($server);
+            /**
+             * 每一个work都存日志
+             */
             $this->app->redis->clearTimer($server);
         }
     }
 
+    /**
+     * work进程停止
+     * @param \swoole_server $server
+     * @param $worker_id
+     */
     public function onWorkerStop(\swoole_server $server, $worker_id)
     {
-
     }
 
     public function onWorkerExit(\swoole_server $server, $worker_id)
@@ -94,6 +100,12 @@ class Server
         Log::record('SWOOLE', "进程异常 WorkerID:{$worker_id} WorkerPID:{$worker_pid}  ExitCode:{$exit_code}");
     }
 
+    /**
+     * 管道信息
+     * @param \swoole_server $server
+     * @param $src_worker_id
+     * @param $message
+     */
     public function onPipeMessage(\swoole_server $server, $src_worker_id, $message)
     {
 
@@ -109,14 +121,26 @@ class Server
         echo 'swoole Manager on stop' . PHP_EOL;
     }
 
+    /**
+     * onTask任务投递
+     * @param $server
+     * @param $task_id
+     * @param $workder_id
+     * @param $data
+     */
     public function onTask($server, $task_id, $workder_id, $data)
     {
         var_dump("onTask \n");
         var_dump("task_id:{$task_id}, workder_id:{$workder_id} \n");
         var_dump($data);
-
     }
 
+    /**
+     * Task任务投递结束
+     * @param $server
+     * @param $task_id
+     * @param $data
+     */
     public function onFinish($server, $task_id, $data)
     {
         var_dump('onTaskFinish:' . $task_id);
