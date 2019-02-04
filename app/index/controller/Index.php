@@ -10,14 +10,14 @@ namespace app\index\controller;
 
 
 use fastwork\Controller;
-use fastwork\facades\Session;
+use fastwork\facades\Config;
 
 class Index extends Controller
 {
 
     public function index()
     {
-        Session::set('dsadsa',111);
+        Config::set('hass',11);
         return $this->success(1111);
     }
 }

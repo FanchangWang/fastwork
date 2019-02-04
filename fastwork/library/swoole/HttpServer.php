@@ -48,7 +48,11 @@ class HttpServer extends Server
         }
         //清除缓存
         $this->app->response->clear();
-        !is_string($router) && $router = $this->app->response->json($router);
+
+        //数组或者对象，转string
+        if (is_array($router) || is_object($router)) {
+            $router = $this->app->response->json($router);
+        }
         return $response->end($router);
     }
 }

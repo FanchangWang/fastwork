@@ -9,6 +9,7 @@
 namespace app\index\controller;
 
 
+use fastwork\facades\Config;
 use fastwork\Request;
 
 class Test
@@ -16,7 +17,8 @@ class Test
 
     public function index(Request $request)
     {
-        return $request->param();
+        $conf = Config::get('hass');
+        return $conf;
     }
 
 }

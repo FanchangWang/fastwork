@@ -9,6 +9,7 @@
 use fastwork\facades\Config;
 use fastwork\facades\Cookie;
 use fastwork\facades\Env;
+use fastwork\facades\Session;
 
 
 /**
@@ -33,6 +34,23 @@ function uuid($base62 = true)
     return $str;
 }
 
+/**
+ * 统一格式json输出
+ */
+function format_json($data, $code, $id = null)
+{
+    $arr = ['code' => $code];
+    if ($code) {
+        $arr['msg'] = $data;
+    } else {
+        $arr['msg'] = '';
+        $arr['data'] = $data;
+    }
+    if ($id) {
+
+    }
+    return json_encode($arr, JSON_UNESCAPED_UNICODE);
+}
 
 /**
  * 从数组中根据key取出值
@@ -96,13 +114,13 @@ function filter_xss($str, $allow_tags = null)
 if (!function_exists('config')) {
     /**
      * 获取和设置配置参数
-     * @param string|array $name 参数名
-     * @param mixed $value 参数值
+     * @param string|array  $name 参数名
+     * @param mixed         $value 参数值
      * @return mixed
      */
     function config($name = '', $value = null)
     {
-        if (is_string($name)) {
+        if (is_null($value) && is_string($name)) {
             if ('.' == substr($name, -1)) {
                 return Config::pull(substr($name, 0, -1));
             }
@@ -152,20 +170,46 @@ if (!function_exists('cookie')) {
         }
     }
 }
-/**
- * 统一格式json输出
- */
-function format_json($data, $code, $id = null)
-{
-    $arr = ['code' => $code];
-    if ($code) {
-        $arr['msg'] = $data;
-    } else {
-        $arr['msg'] = '';
-        $arr['data'] = $data;
-    }
-    if ($id) {
 
+if (!function_exists('env')) {
+    /**
+     * 获取环境变量值
+     * @access public
+     * @param  string    $name 环境变量名（支持二级 .号分割）
+     * @param  string    $default  默认值
+     * @return mixed
+     */
+    function env($name = null, $default = null)
+    {
+        return Env::get($name, $default);
     }
-    return json_encode($arr, JSON_UNESCAPED_UNICODE);
+}
+
+if (!function_exists('session')) {
+    /**
+     * Session管理
+     * @param string|array  $name session名称，如果为数组表示进行session设置
+     * @param mixed         $value session值
+     * @param string        $prefix 前缀
+     * @return mixed
+     */
+    function session($name, $value = '', $prefix = null)
+    {
+        if (is_array($name)) {
+            // 初始化
+            Session::init($name);
+        } elseif (is_null($name)) {
+            // 清除
+            Session::clear($value);
+        } elseif ('' === $value) {
+            // 判断或获取
+            return 0 === strpos($name, '?') ? Session::has(substr($name, 1), $prefix) : Session::get($name, $prefix);
+        } elseif (is_null($value)) {
+            // 删除
+            return Session::delete($name, $prefix);
+        } else {
+            // 设置
+            return Session::set($name, $value, $prefix);
+        }
+    }
 }
