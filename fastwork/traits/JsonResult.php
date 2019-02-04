@@ -15,13 +15,13 @@ trait JsonResult
 {
 
 
-    public function error($msg = '操作失败', $data = '')
+    public function error($data = '', $msg = '操作失败')
     {
         return $this->result(0, $msg, $data);
 
     }
 
-    public function success($msg = '操作成功', $data = '')
+    public function success($data = '', $msg = '操作成功')
     {
         return $this->result(1, $msg, $data);
     }

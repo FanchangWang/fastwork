@@ -241,16 +241,6 @@ class Redis
         });
     }
 
-    /**
-     * 获取一个连接池
-     * 必须用在Go协程里面才可以
-     * @return mixed
-     */
-    public function getPool()
-    {
-        return $this->pool->pop();
-    }
-
 
     public function setDefer($bool = true)
     {

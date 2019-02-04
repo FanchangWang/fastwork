@@ -10,6 +10,7 @@ namespace fastwork\swoole;
 
 
 use fastwork\Container;
+use fastwork\db\MysqlPool;
 use fastwork\facades\Log;
 use fastwork\Fastwork;
 
@@ -71,10 +72,8 @@ class Server
         if (0 == $worker_id) {
             $this->monitor($server);
         }
-        if (!$this->is_task) {
-            $this->app->log->clearTimer($server);
-            $this->app->redis->clearTimer($server);
-        }
+        $this->app->log->clearTimer($server);
+        $this->app->redis->clearTimer($server);
     }
 
     /**

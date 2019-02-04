@@ -42,7 +42,7 @@ class Log
     {
         $type = strtoupper($type);
         if (is_array($params)) {
-            $params = var_export($params, true);
+            $params = print_r($params, true);
         } elseif (is_object($params)) {
             $params = json_decode($params);
         }

@@ -10,14 +10,18 @@ namespace app\index\controller;
 
 
 use fastwork\Controller;
-use fastwork\facades\Config;
+use fastwork\facades\Redis;
 
 class Index extends Controller
 {
 
     public function index()
     {
-        Config::set('hass',11);
-        return $this->success(1111);
+        for ($i = 1; $i <= 500; $i++) {
+            go(function () use ($i){
+                Redis::set('redis_'.$i,$i);
+            });
+        }
+        return $this->success(1);
     }
 }

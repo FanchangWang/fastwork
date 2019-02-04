@@ -28,6 +28,6 @@ return [
     /**
      * 异常捕获的模板
      */
-    'http_exception_template' => 'exception.php',
+    'http_exception_template' => Env::get('app_path') . 'exception.php',
 
 ];
