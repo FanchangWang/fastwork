@@ -19,7 +19,8 @@
     ]
   },
   "require": {
-    "php": ">=7.1"
+    "php": ">=7.1",
+    "topthink/think-template": "^2.0"
   },
   "require-dev": {
     "swoft/swoole-ide-helper": "^4.2"

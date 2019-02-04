@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'traits\\' => array($baseDir . '/fastwork/traits'),
+    'think\\' => array($vendorDir . '/topthink/think-template/src'),
     'fastwork\\' => array($baseDir . '/fastwork/library'),
     'app\\' => array($baseDir . '/app'),
 );

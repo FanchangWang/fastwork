@@ -18,10 +18,11 @@ class Index extends Controller
     public function index()
     {
         for ($i = 1; $i <= 500; $i++) {
-            go(function () use ($i){
-                Redis::set('redis_'.$i,$i);
+            go(function () use ($i) {
+                Redis::set('redis_' . $i, $i);
             });
         }
-        return $this->success(1);
+        $this->assign('title', '12121title');
+        return $this->fetch();
     }
 }

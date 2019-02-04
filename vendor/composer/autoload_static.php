@@ -14,6 +14,7 @@ class ComposerStaticInitda5e01dd9b0a05eed98a9e4587b7a414
         't' => 
         array (
             'traits\\' => 7,
+            'think\\' => 6,
         ),
         'f' => 
         array (
@@ -29,6 +30,10 @@ class ComposerStaticInitda5e01dd9b0a05eed98a9e4587b7a414
         'traits\\' => 
         array (
             0 => __DIR__ . '/../..' . '/fastwork/traits',
+        ),
+        'think\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/topthink/think-template/src',
         ),
         'fastwork\\' => 
         array (

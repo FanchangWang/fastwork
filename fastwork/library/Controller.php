@@ -25,11 +25,6 @@ class Controller
     protected $request;
 
     private $response;
-    /**
-     * 需要传递的assgin值
-     * @var array
-     */
-    private $assign = [];
 
     public function __construct(Fastwork $app)
     {
@@ -60,9 +55,15 @@ class Controller
      * @param $val
      * @return Controller
      */
-    protected function assign($key, $val)
+    protected function assign($key, $val = '')
     {
-        $this->assign[$key] = $val;
+        $arr = [];
+        if (is_array($key)) {
+            $arr = $key;
+        } else {
+            $arr[$key] = $val;
+        }
+        $this->app->view->assign($arr);
         return $this;
     }
 
@@ -98,23 +99,11 @@ class Controller
         if (!is_file($path)) {
             throw new FileNotFoundException("template not exist: " . $path);
         }
-        $assign = $this->getAssign();
         if (!empty($var)) {
-            $assign = array_merge($assign, $var);
+            $this->app->view->assign($var);
         }
-        return $this->response->tpl($assign, $path);
-    }
-
-    private function getAssign()
-    {
-        $assign = $this->assign;
-        $this->assign = [];
-        return $assign;
-    }
-
-    public function __destruct()
-    {
-        // TODO: Implement __destruct() method.
-        $this->assign = [];
+        ob_start();
+        $this->app->view->fetch($path);
+        return ob_get_clean();
     }
 }

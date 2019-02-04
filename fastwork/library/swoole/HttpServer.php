@@ -9,10 +9,9 @@
 namespace fastwork\swoole;
 
 
-use fastwork\exception\ClassNotFoundException;
-use fastwork\exception\MethodNotFoundException;
-use fastwork\facades\Error;
 use fastwork\exception\HttpRuntimeException;
+use fastwork\facades\Error;
+use think\exception\TemplateNotFoundException;
 
 class HttpServer extends Server
 {
@@ -49,6 +48,9 @@ class HttpServer extends Server
             }
             return $response->end($router);
         } catch (HttpRuntimeException $e) {
+            $router = Error::render($this->app->response, $e);
+            return $response->end($router);
+        } catch (TemplateNotFoundException $e) {
             $router = Error::render($this->app->response, $e);
             return $response->end($router);
         } catch (\Throwable $e) {

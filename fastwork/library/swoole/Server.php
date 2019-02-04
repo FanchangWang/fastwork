@@ -13,6 +13,7 @@ use fastwork\Container;
 use fastwork\db\MysqlPool;
 use fastwork\facades\Log;
 use fastwork\Fastwork;
+use think\Template;
 
 class Server
 {
@@ -57,6 +58,11 @@ class Server
         echo 'swoole on Shutdown' . PHP_EOL;
     }
 
+    /**
+     * @param \swoole_server $server
+     * @param $worker_id
+     * @throws \ReflectionException
+     */
     public function onWorkerStart(\swoole_server $server, $worker_id)
     {
         /* 初始化配置 */
@@ -65,7 +71,14 @@ class Server
         $this->is_task = $server->taskworker ? true : false;
         $this->app->initialize();
         $this->app->swoole = $server;
+
         $this->app->routeInit();
+
+        /**
+         * 模板引擎
+         */
+        $tempConfig = $this->app->config->get('template');
+        $this->app->view = new Template($tempConfig);
         /**
          * 定时监控
          */
