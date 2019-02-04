@@ -10,17 +10,14 @@ namespace app\index\controller;
 
 
 use fastwork\Controller;
-use fastwork\facades\Redis;
+use fastwork\facades\Session;
 
 class Index extends Controller
 {
 
     public function index()
     {
-        for ($i = 1; $i <= 10; $i++) {
-            Redis::set('de_' . $i, $i, 300);
-        }
-
-        return 1312312321;
+        Session::set('dsadsa',111);
+        return $this->success(1111);
     }
 }

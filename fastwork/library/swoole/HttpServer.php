@@ -48,7 +48,7 @@ class HttpServer extends Server
         }
         //清除缓存
         $this->app->response->clear();
-
+        !is_string($router) && $router = $this->app->response->json($router);
         return $response->end($router);
     }
 }

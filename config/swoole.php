@@ -26,18 +26,18 @@ return [
         'reload_async' => true, // 柔性异步重启，会等待所有协程退出后重启
         //swoole的pid和日志配置
         'pid_file' => Env::get('runtime_path') . 'swoole.pid',
-        'log_file' => APP_DEBUG ? null: Env::get('runtime_path') . 'swoole.log',
+        'log_file' => APP_DEBUG ? null : Env::get('runtime_path') . 'swoole.log',
         //websocket心跳配置
         'heartbeat_check_interval' => 20, // 此选项表示每隔多久轮循一次
         'heartbeat_idle_time' => 60,
     ],
     'monitor' => [
-        'timer' => 2000,  //定时器间隔时间，单位毫秒
+        'timer' => 1500,  //定时器间隔时间，单位毫秒
         'debug' => APP_DEBUG,       //重启
         'path' => [
             Env::get('app_path'),
             Env::get('config_path'),
-            Env::get('runtime_path')
+            Env::get('route_path')
         ]
     ],
 

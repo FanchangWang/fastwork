@@ -60,8 +60,7 @@ class Session
      * session初始化
      * @access public
      * @param  array $config
-     * @return void
-     * @throws \think\Exception
+     * @return Session
      */
     public function init(array $config = [])
     {

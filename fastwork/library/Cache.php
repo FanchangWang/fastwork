@@ -47,7 +47,7 @@ class Cache
             return $default;
         }
 
-        return $value;
+        return unserialize($value);
     }
 
     /**
@@ -79,6 +79,7 @@ class Cache
         $key = $this->getCacheKey($name);
         $expire = $this->getExpireTime($expire);
 
+        $value = serialize($value);
         if ($expire) {
             $result = $this->redis->setex($key, $expire, $value);
         } else {

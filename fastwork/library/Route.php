@@ -82,7 +82,9 @@ class Route
         /**
          * 合并所有参数
          */
-        $params = array_merge($params, $query_string);
+        if (!is_null($query_string)) {
+            $params = array_merge($params, $query_string);
+        }
         $app_namespace = Env::get('app_namespace');
         $controller = ucfirst($controller);
         $classname = "\\{$app_namespace}\\{$module}\\controller\\{$controller}";

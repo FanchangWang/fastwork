@@ -324,12 +324,9 @@ class Request
      */
     public function cookie($name = '', $default = null, $filter = '')
     {
-        if (empty($this->cookie)) {
-            $this->cookie = Cookie::get();
-        }
 
         if (!empty($name)) {
-            $data = Cookie::has($name) ? Cookie::get($name) : $default;
+            $data = isset($this->cookie[$name]) ? $this->cookie[$name] : $default;
         } else {
             $data = $this->cookie;
         }
