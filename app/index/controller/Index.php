@@ -18,7 +18,9 @@ class Index extends Controller
     public function index()
     {
         for ($i = 1; $i <= 10; $i++) {
-            Redis::set('de_' . $i, $i ,300);
+            Redis::set('de_' . $i, $i, 300);
         }
+
+        return 1312312321;
     }
 }

@@ -11,7 +11,7 @@ use fastwork\facades\Env;
 return [
     //server设置
     'ip' => '0.0.0.0',   //监听IP
-    'port' => 8081,        //监听端口
+    'port' => 8098,        //监听端口
     'server' => 'websocket',     //服务，可选 websocket 默认http
     'set' => [            //配置参数  请查看  https://wiki.swoole.com/wiki/page/274.html
         'daemonize' => APP_DEBUG ? false : true,
@@ -37,6 +37,7 @@ return [
         'path' => [
             Env::get('app_path'),
             Env::get('config_path'),
+            Env::get('runtime_path')
         ]
     ],
 

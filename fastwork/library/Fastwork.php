@@ -43,12 +43,13 @@ class Fastwork extends Container
         if ($this->initialized) {
             return;
         }
-
+        date_default_timezone_set('Asia/Shanghai');
         $this->initialized = true;
         $corePath = dirname(__DIR__) . DIRECTORY_SEPARATOR;
         $rootPath = dirname($this->app_path) . DIRECTORY_SEPARATOR;
         $configPath = $rootPath . 'config' . DIRECTORY_SEPARATOR;
         $runtimePath = $rootPath . 'runtime' . DIRECTORY_SEPARATOR;
+        $routerPath = $rootPath . 'router' . DIRECTORY_SEPARATOR;
         static::setInstance($this);
         $this->instance('fastwork', $this);
         $env = [
@@ -56,7 +57,8 @@ class Fastwork extends Container
             'root_path' => $rootPath,
             'app_path' => $this->getAppPath(),
             'runtime_path' => $runtimePath,
-            'config_path' => $configPath
+            'config_path' => $configPath,
+            'route_path' => $routerPath
         ];
         // 设置路径环境变量
         $this->env->set($env);
@@ -67,6 +69,9 @@ class Fastwork extends Container
         $namespace = $this->env->get('app_namespace', $this->namespace);
         $this->env->set('app_namespace', $namespace);
         $this->setConfigPath($configPath);
+        /**
+         * 初始化配置
+         */
         $this->init();
     }
 
@@ -99,6 +104,21 @@ class Fastwork extends Container
         }
     }
 
+    /**
+     * 路由导入
+     */
+    public function routeInit()
+    {
+        $route_path = $this->env->get('route_path');
+        // 路由检测
+        $files = scandir($route_path);
+        foreach ($files as $file) {
+            if (strpos($file, '.php')) {
+                $filename = $route_path . $file;
+                include $filename;
+            }
+        }
+    }
 
     /**
      * 启动swoole

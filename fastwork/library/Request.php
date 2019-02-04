@@ -405,6 +405,15 @@ class Request
     }
 
     /**
+     * request_uri
+     * @return mixed|null
+     */
+    public function path()
+    {
+        return $this->server('request_uri');
+    }
+
+    /**
      * 当前是否Ajax请求
      * @access public
      * @return bool

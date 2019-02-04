@@ -41,8 +41,10 @@ class Log
     public function record($type, $params)
     {
         $type = strtoupper($type);
-        if (!is_string($params)) {
+        if (is_array($params)) {
             $params = var_export($params, true);
+        } elseif (is_object($params)) {
+            $params = json_decode($params);
         }
         $msg = "{$type} \t " . date("Y-m-d h:i:s") . " \t " . $params;
         if (!in_array($type, $this->config['level'])) return false;

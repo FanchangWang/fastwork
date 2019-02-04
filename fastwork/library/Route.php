@@ -9,44 +9,168 @@
 namespace fastwork;
 
 
+use fastwork\exception\ClassNotFoundException;
+use fastwork\exception\MethodNotFoundException;
+use fastwork\facades\Config;
+use fastwork\facades\Env;
+use fastwork\router\RouterParse;
+
 class Route
 {
-    public function http(Request $request, Config $config)
+    private $routes = array();
+
+    public function dispath(Request $request)
     {
-        $param = [];
-        $config = $config->get('app');
+        $path = $request->path();
+        $route = $this->match($path, $request->method());
+        if ($route) {
+            $className = $route->getStorage(); // 123
+            $params = $route->getParams();
+            //没有路由配置或者配置不可执行，则走默认路由
+            if (is_string($className)) {
+                return $this->normal($className, $request, $params);
+            } elseif (is_callable($className)) {
+                return $className();
+            }
+        }
+        return $this->normal($path, $request);
+    }
+
+    /**
+     * @param $path
+     * @param Request $request
+     * @param array $param
+     * @return mixed
+     * @throws \ReflectionException
+     */
+    public function normal($path, Request $request, $query_string = [])
+    {
+        $config = Config::get('app');
         $module = $config['default_module'];
         $controller = $config['default_controller'];
         $action = $config['default_action'];
-        $request_uri = $request->server('request_uri');
-
-        if (empty($request_uri)) {
-            return ['m' => $module, 'c' => $controller, 'a' => $action, 'p' => $param];
-        }
-        $path = trim($request_uri, '/');
-
-        $param = explode("/", $path);
-        !empty($param[0]) && $module = $param[0];
-        isset($param[1]) && $controller = $param[1];
-        isset($param[2]) && $action = $param[2];
-
-        if (count($param) >= 3) {
-            $param = array_slice($param, 3);
-        } else {
-            $param = array_slice($param, 2);
-        }
+        //默认访问 controller/index.php 的 index方法
+        $path = rtrim(ltrim($path, '/'));
         $params = [];
-        if (!empty($param)) {
-            foreach ($param as $key => $value) {
-                if ($key % 2 == 0) {
-                    $params[$value] = $key;
-                } else {
-                    $k = array_search($key - 1, $params);
-                    isset($params[$k]) && $params[$k] = $value;
+        if (!empty($path)) {
+            $maps = explode('/', $path);
+            $mapsNumber = count($maps);
+            $param = array_slice($maps, 2);
+            if ($mapsNumber == 2) {
+                $controller = $maps[0];
+                (isset($maps[1]) && !empty($maps[1])) && $action = $maps[1];
+            } else if ($mapsNumber >= 3) {
+                $module = $maps[0];
+                $controller = $maps[1];
+                (isset($maps[2]) && !empty($maps[2])) && $action = $maps[2];
+                $param = array_slice($maps, 3);
+            } else {
+                $module = $maps[0];
+            }
+            //多余的路由转参数
+            if (!empty($param)) {
+                foreach ($param as $key => $value) {
+                    if ($key % 2 == 0) {
+                        $params[$value] = $key;
+                    } else {
+                        $k = array_search($key - 1, $params);
+                        isset($params[$k]) && $params[$k] = $value;
+                    }
                 }
             }
         }
+        /**
+         * 合并所有参数
+         */
+        $params = array_merge($params, $query_string);
+        $app_namespace = Env::get('app_namespace');
+        $controller = ucfirst($controller);
+        $classname = "\\{$app_namespace}\\{$module}\\controller\\{$controller}";
+        $request->setAction($action)->setController($controller)->setModule($module)->setParam($params);
+        $realmvc = "{$module}/{$controller}/{$action}";
+        if (!class_exists($classname)) {
+            throw  new  ClassNotFoundException('class not exit:' . $realmvc);
+        }
+        //反射依赖注入
+        $reflect = new \ReflectionClass($classname);
+        $constructor = $reflect->getConstructor();
+        $args = [];
+        if ($constructor) {
+            $args = Container::get('fastwork')->bindParams($constructor, []);
+        }
+        if (!$reflect->hasMethod($action)) {
+            if (!$reflect->hasMethod('_empty')) {
+                throw new MethodNotFoundException('method not exit:' . $realmvc);
+            }
+            $action = '_empty';
+        }
+        $method = $reflect->getMethod($action);
+        if (!$method->isPublic()) {
+            throw new MethodNotFoundException('method not exit:' . " {$realmvc}");
+        }
+        $content = Container::get('fastwork')->invokeMethod([$reflect->newInstanceArgs($args), $action], $params);
+        return $content;
+    }
 
-        return ['m' => $module, 'c' => $controller, 'a' => $action, 'p' => $params];
+    /**
+     * 添加get参数路由
+     *
+     * @param  String $uri 路由匹配的URI
+     * @param  [Mix] [Mix] $storage 你要存入的任意类型
+     * @param  String $name 路由名
+     * @return RouterParse
+     */
+    public function get($uri, $storage, $name = null)
+    {
+        return $this->add($uri, $storage, $name, 'GET');
+    }
+
+    /**
+     * 添加post参数路由
+     *
+     * @param  String $uri 路由匹配的URI
+     * @param  [Mix] $storage 你要存入的任意类型
+     * @param  String $name 路由名
+     * @return RouterParse
+     */
+    public function post($uri, $storage, $name = null)
+    {
+        return $this->add($uri, $storage, $name, 'POST');
+    }
+
+    /**
+     * 添加新的路由匹配
+     * @param $uri
+     * @param $storage
+     * @param null $name
+     * @param null $methods
+     * @return RouterParse
+     */
+    public function add($uri, $storage, $name = null, $methods = null)
+    {
+        $route = new RouterParse($uri, $storage, $methods);
+        if ($name !== null) {
+            $this->routes[$name] = $route;
+        } else {
+            $this->routes[] = $route;
+        }
+        return $route;
+    }
+
+    /**
+     * 按照传入的规则从添加的路由中找到匹配路由
+     * @param  String $uri 要匹配的URL
+     * @param  String $method 匹配的HTTP方法
+     * @return bool|mixed
+     */
+    public function match($uri, $method)
+    {
+        foreach ($this->routes as $route) {
+            if ($route->match($uri, $method)) { //调用每个对象Route查询是非匹配
+                return $route;
+            }
+        }
+        //没有找到匹配的路由
+        return false;
     }
 }

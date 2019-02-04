@@ -47,7 +47,6 @@ class Server
 
     public function onStart(\swoole_server $server)
     {
-        date_default_timezone_set('Asia/Shanghai');
         $config = $this->conf;
         echo "swoole is start {$config['ip']}:{$config['port']}" . PHP_EOL;
     }
@@ -65,6 +64,7 @@ class Server
         $this->is_task = $server->taskworker ? true : false;
         $this->app->initialize();
         $this->app->swoole = $server;
+        $this->app->routeInit();
         /**
          * 定时监控
          */
