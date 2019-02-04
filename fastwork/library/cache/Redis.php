@@ -13,6 +13,7 @@ use fastwork\Config;
 use fastwork\exception\RedisNotAvailableException;
 use Swoole\Coroutine;
 use Swoole\Coroutine\Channel;
+use traits\Pools;
 
 /**
  * Class Redis
@@ -108,10 +109,8 @@ use Swoole\Coroutine\Channel;
  */
 class Redis
 {
-    /**
-     * @var Channel
-     */
-    protected $pool;
+    use Pools;
+
     //配置
     public $config = [
         //服务器地址
@@ -136,109 +135,11 @@ class Redis
         'serialize' => false, //自动序列化，默认false
         'reconnect' => 1  //自动连接尝试次数，默认为1次
     ];
-    /**
-     * 入池时间
-     * @var
-     */
-    protected $pushTime = '';
-    //新建时间
-    protected $addPoolTime = '';
-    //池状态
-    protected $available = true;
-
-    public function __construct($config)
-    {
-        if ($config['clearAll'] < $config['clearTime']) {
-            $config['clearAll'] = $config['clearTime'];
-        }
-        $this->config = array_merge($this->config, $config);
-        $this->pool = new Channel($this->config['poolMax']);
-    }
 
     public static function __make(Config $config)
     {
         $redisConfig = $config->get('cache.redis');
         return new static($redisConfig);
-    }
-
-    /**
-     * @入池
-     *
-     * @param $redis
-     */
-    public function push($redis)
-    {
-        //未超出池最大值时
-        if ($this->pool->length() < $this->config['poolMax']) {
-            $this->pool->push($redis);
-        }
-        $this->pushTime = time();
-    }
-
-    /**
-     * @出池
-     * @param null $create
-     * @return bool|mixed|\Swoole\Coroutine\Redis
-     */
-    public function pop($create = null)
-    {
-        $re_i = -1;
-        back:
-        $re_i++;
-        if (!$this->available) {
-            throw new RedisNotAvailableException('Redis连接池正在销毁');
-            return false;
-        }
-        //有空闲连接且连接池处于可用状态
-        if ($this->pool->length() > 0 && $create == null) {
-            $redis = $this->pool->pop();
-        } else {
-            //无空闲连接，创建新连接
-            $redis = new \Swoole\Coroutine\Redis([
-                'connect_timeout' => $this->config['connect_timeout'],
-                'timeout' => $this->config['timeout'],
-                'serialize' => $this->config['serialize'],
-                'reconnect' => $this->config['reconnect']
-            ]);
-            $redis->connect($this->config['host'], $this->config['port']);
-
-            if (!empty($this->config['auth'])) {
-                $redis->auth($this->config['auth']);
-            }
-            $this->addPoolTime = time();
-        }
-
-        if ($redis->connected === true && $redis->errCode === 0) {
-            return $redis;
-        } else {
-            if ($re_i <= $this->config['reconnect']) {
-                unset($redis);
-                goto back;
-            }
-        }
-    }
-
-    /**
-     * @定时器
-     *
-     * @param $server
-     */
-    public function clearTimer(\swoole_server $server)
-    {
-
-        $server->tick($this->config['clearTime'] * 1000, function () use ($server) {
-            if ($this->pool->length() > $this->config['poolMin'] && time() - 10 > $this->addPoolTime) {
-                $this->pool->pop();
-            }
-            if ($this->pool->length() > 0 && time() - $this->config['clearAll'] > $this->pushTime) {
-                while (!$this->pool->isEmpty()) {
-                    if ($this->pool->length() <= $this->config['poolMin']) {
-                        break;
-                    }
-                    $this->pool->pop();
-                }
-            }
-        });
     }
 
 
@@ -258,6 +159,28 @@ class Redis
         while (!$this->pool->isEmpty()) {
             $this->pool->pop();
         }
+    }
+
+
+    /**
+     * //无空闲连接，创建新连接
+     * @return Coroutine\Redis
+     */
+    protected function createPool()
+    {
+        $redis = new \Swoole\Coroutine\Redis([
+            'connect_timeout' => $this->config['connect_timeout'],
+            'timeout' => $this->config['timeout'],
+            'serialize' => $this->config['serialize'],
+            'reconnect' => $this->config['reconnect']
+        ]);
+        $redis->connect($this->config['host'], $this->config['port']);
+
+        if (!empty($this->config['auth'])) {
+            $redis->auth($this->config['auth']);
+        }
+        $this->addPoolTime = time();
+        return $redis;
     }
 
     /**
