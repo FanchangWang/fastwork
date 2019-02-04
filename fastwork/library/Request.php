@@ -472,20 +472,28 @@ class Request
      * @param $filter
      * @return array
      */
-    public function input($data, $name = '', $default = null, $filter = '')
+    protected function input($data = [], $name = '', $default = null, $filter = '')
     {
-        if ('' === $name) {
-            if ($this->isJson()) {
-                $data = json_decode($this->inputRaw(), true);
-            } else {
-                $data = $this->request;
-            }
+        if (false === $name) {
+            // 获取原始数据
             return $data;
         }
-        $data = array_get($data, $name, $default);
+        $name = (string) $name;
+        if ('' != $name) {
+            // 解析name
+            if (strpos($name, '/')) {
+                list($name, $type) = explode('/', $name);
+            }
 
-        if (is_null($data)) {
-            return $default;
+            $data = $this->getData($data, $name);
+
+            if (is_null($data)) {
+                return $default;
+            }
+
+            if (is_object($data)) {
+                return $data;
+            }
         }
         // 解析过滤器
         $filter = $this->getFilter($filter, $default);
@@ -496,10 +504,69 @@ class Request
         } else {
             $this->filterValue($data, $name, $filter);
         }
+
+        if (isset($type) && $data !== $default) {
+            // 强制类型转换
+            $this->typeCast($data, $type);
+        }
+
         return $data;
     }
+    /**
+     * 强制类型转换
+     * @access public
+     * @param  string $data
+     * @param  string $type
+     * @return mixed
+     */
+    private function typeCast(&$data, $type)
+    {
+        switch (strtolower($type)) {
+            // 数组
+            case 'a':
+                $data = (array) $data;
+                break;
+            // 数字
+            case 'd':
+                $data = (int) $data;
+                break;
+            // 浮点
+            case 'f':
+                $data = (float) $data;
+                break;
+            // 布尔
+            case 'b':
+                $data = (boolean) $data;
+                break;
+            // 字符串
+            case 's':
+                if (is_scalar($data)) {
+                    $data = (string) $data;
+                } else {
+                    throw new \InvalidArgumentException('variable type error：' . gettype($data));
+                }
+                break;
+        }
+    }
+    /**
+     * 获取数据
+     * @access public
+     * @param  array $data 数据源
+     * @param  string|false $name 字段名
+     * @return mixed
+     */
+    protected function getData(array $data, $name)
+    {
+        foreach (explode('.', $name) as $val) {
+            if (isset($data[$val])) {
+                $data = $data[$val];
+            } else {
+                return;
+            }
+        }
 
-
+        return $data;
+    }
     /**
      * 获取任意参数
      * @param string $name

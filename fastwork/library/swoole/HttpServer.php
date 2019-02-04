@@ -36,23 +36,24 @@ class HttpServer extends Server
             $router = $this->app->route->dispath(
                 $this->app->request
             );
+
+            foreach ($this->app->response->getHeader() as $k => $v) {
+                $response->header($k, $v);
+            }
+            //清除缓存
+            $this->app->response->clear();
+
+            //数组或者对象，转string
+            if (is_array($router) || is_object($router)) {
+                $router = $this->app->response->json($router);
+            }
+            return $response->end($router);
         } catch (HttpRuntimeException $e) {
             $router = Error::render($this->app->response, $e);
+            return $response->end($router);
         } catch (\Throwable $e) {
-            $router = '';
             Error::report($e);
+            return $response->end();
         }
-
-        foreach ($this->app->response->getHeader() as $k => $v) {
-            $response->header($k, $v);
-        }
-        //清除缓存
-        $this->app->response->clear();
-
-        //数组或者对象，转string
-        if (is_array($router) || is_object($router)) {
-            $router = $this->app->response->json($router);
-        }
-        return $response->end($router);
     }
 }
