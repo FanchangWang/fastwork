@@ -11,6 +11,7 @@ namespace app\index\controller;
 
 use fastwork\Controller;
 use fastwork\Db;
+use fastwork\facades\Cache;
 use fastwork\facades\Redis;
 
 class Index extends Controller
@@ -18,8 +19,9 @@ class Index extends Controller
 
     public function index()
     {
-        $list = Db::name('user')->find();
-        $this->assign('title', $list);
-        return $this->fetch();
+        go(function () {
+            Cache::set('redis', 1111);
+        });
+        return $this->success();
     }
 }

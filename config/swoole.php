@@ -36,7 +36,6 @@ return [
         'debug' => APP_DEBUG,       //重启
         'path' => [
             Env::get('app_path'),
-            Env::get('config_path'),
             Env::get('route_path')
         ]
     ],

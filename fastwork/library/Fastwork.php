@@ -69,10 +69,6 @@ class Fastwork extends Container
         $namespace = $this->env->get('app_namespace', $this->namespace);
         $this->env->set('app_namespace', $namespace);
         $this->setConfigPath($configPath);
-        /**
-         * 初始化配置
-         */
-        $this->init();
     }
 
     /**

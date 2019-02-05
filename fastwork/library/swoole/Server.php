@@ -68,6 +68,8 @@ class Server
     {
         /* 初始化配置 */
         $this->app = Container::get('fastwork');
+        $this->app->init();
+
         $this->lastMtime = time();
         $this->is_task = $server->taskworker ? true : false;
         $this->app->initialize();
@@ -111,7 +113,6 @@ class Server
 
     public function onWorkerExit(\swoole_server $server, $worker_id)
     {
-        echo 'swoole Worker on Exit' . PHP_EOL;
     }
 
     public function onWorkerError(\swoole_server $server, $worker_id, $worker_pid, $exit_code, $signal)
