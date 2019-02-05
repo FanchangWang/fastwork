@@ -79,6 +79,28 @@ class Query
 //
 //    }
 
+    /**
+     * 查询缓存
+     * @access public
+     * @param  mixed $key 缓存key
+     * @param  integer|\DateTime $expire 缓存有效期
+     * @param  string $tag 缓存标签
+     * @return $this
+     */
+    public function cache($key = true, $expire = null, $tag = null)
+    {
+        // 增加快捷调用方式 cache(10) 等同于 cache(true, 10)
+        if ($key instanceof \DateTime || (is_numeric($key) && is_null($expire))) {
+            $expire = $key;
+            $key = true;
+        }
+
+        if (false !== $key) {
+            $this->options['cache'] = ['key' => $key, 'expire' => $expire, 'tag' => $tag];
+        }
+
+        return $this;
+    }
 
     /**
      * @查询字段
@@ -312,7 +334,6 @@ class Query
         $chan = new \chan(1);
         go(function () use ($chan, $result) {
             $mysql = $this->pool->pop();
-
             if (is_string($result)) {
                 $rs = $mysql->query($result);
                 $this->pool->push($mysql);
@@ -320,15 +341,17 @@ class Query
                     $chan->push($rs);
                 }
             } else {
-                $stmt = $mysql->prepare($result['sql']);
-                if ($stmt) {
-                    $rs = $stmt->execute($result['fastworkBind']);
-                    $this->pool->push($mysql);
-                    if ($this->options['setDefer']) {
-                        if ($this->options['limit'] == 1) {
-                            $chan->push($rs[0]);
-                        } else {
-                            $chan->push($rs);
+                if (is_array($result)) {
+                    $stmt = $mysql->prepare($result['sql']);
+                    if ($stmt) {
+                        $rs = $stmt->execute($result['fastworkBind']);
+                        $this->pool->push($mysql);
+                        if ($this->options['setDefer']) {
+                            if ($this->options['limit'] == 1) {
+                                $chan->push($rs[0]);
+                            } else {
+                                $chan->push($rs);
+                            }
                         }
                     }
                 }
