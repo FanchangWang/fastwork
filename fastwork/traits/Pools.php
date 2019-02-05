@@ -80,6 +80,7 @@ trait Pools
             return $pools;
         } else {
             if ($re_i <= $this->config['reconnect']) {
+                $pools->close();
                 unset($pools);
                 goto back;
             }
