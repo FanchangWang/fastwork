@@ -6,11 +6,24 @@
  * Time: 19:03
  */
 
+use fastwork\Container;
 use fastwork\facades\Config;
 use fastwork\facades\Cookie;
 use fastwork\facades\Env;
 use fastwork\facades\Session;
 
+if (!function_exists('app')) {
+    /**
+     * 快速获取容器中的实例 支持依赖注入
+     * @param string $name 类名或标识 默认获取当前应用实例
+     * @param array $args 参数
+     * @param bool $newInstance 是否每次创建新的实例
+     */
+    function app($name = 'fastwork', $args = [], $newInstance = false)
+    {
+        return Container::get($name, $args, $newInstance);
+    }
+}
 
 /**
  * 生成UUID
@@ -114,8 +127,8 @@ function filter_xss($str, $allow_tags = null)
 if (!function_exists('config')) {
     /**
      * 获取和设置配置参数
-     * @param string|array  $name 参数名
-     * @param mixed         $value 参数值
+     * @param string|array $name 参数名
+     * @param mixed $value 参数值
      * @return mixed
      */
     function config($name = '', $value = null)
@@ -175,8 +188,8 @@ if (!function_exists('env')) {
     /**
      * 获取环境变量值
      * @access public
-     * @param  string    $name 环境变量名（支持二级 .号分割）
-     * @param  string    $default  默认值
+     * @param  string $name 环境变量名（支持二级 .号分割）
+     * @param  string $default 默认值
      * @return mixed
      */
     function env($name = null, $default = null)
@@ -188,9 +201,9 @@ if (!function_exists('env')) {
 if (!function_exists('session')) {
     /**
      * Session管理
-     * @param string|array  $name session名称，如果为数组表示进行session设置
-     * @param mixed         $value session值
-     * @param string        $prefix 前缀
+     * @param string|array $name session名称，如果为数组表示进行session设置
+     * @param mixed $value session值
+     * @param string $prefix 前缀
      * @return mixed
      */
     function session($name, $value = '', $prefix = null)

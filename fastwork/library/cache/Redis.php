@@ -10,9 +10,7 @@ namespace fastwork\cache;
 
 
 use fastwork\Config;
-use fastwork\exception\PoolsNotAvailableException;
 use Swoole\Coroutine;
-use Swoole\Coroutine\Channel;
 use traits\Pools;
 
 /**
@@ -136,6 +134,11 @@ class Redis
         'reconnect' => 1  //自动连接尝试次数，默认为1次
     ];
 
+    public function __construct($config)
+    {
+        $this->init($config);
+    }
+
     public static function __make(Config $config)
     {
         $redisConfig = $config->get('cache.redis');
@@ -179,7 +182,6 @@ class Redis
         if (!empty($this->config['auth'])) {
             $redis->auth($this->config['auth']);
         }
-        $this->addPoolTime = time();
         return $redis;
     }
 

@@ -19,7 +19,6 @@ trait Pools
      * @var Channel
      */
     protected $pool;
-
     /**
      * 入池时间
      * @var
@@ -30,7 +29,7 @@ trait Pools
     //池状态
     protected $available = true;
 
-    public function __construct($config)
+    public function init($config)
     {
         if ($config['clearAll'] < $config['clearTime']) {
             $config['clearAll'] = $config['clearTime'];
@@ -75,6 +74,7 @@ trait Pools
             $pools = $this->pool->pop();
         } else {
             $pools = $this->createPool();
+            $this->addPoolTime = time();
         }
         if ($pools->connected === true) {
             return $pools;
@@ -108,4 +108,13 @@ trait Pools
             }
         });
     }
+
+    /**
+     * @return Channel
+     */
+    public function getPool(): Channel
+    {
+        return $this->pool;
+    }
+
 }

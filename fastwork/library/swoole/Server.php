@@ -10,6 +10,7 @@ namespace fastwork\swoole;
 
 
 use fastwork\Container;
+use fastwork\Db;
 use fastwork\db\MysqlPool;
 use fastwork\facades\Log;
 use fastwork\Fastwork;
@@ -86,7 +87,17 @@ class Server
             $this->monitor($server);
         }
         $this->app->log->clearTimer($server);
+        /**
+         * 开启redis连接池
+         */
         $this->app->redis->clearTimer($server);
+        /**
+         * 开启数据库
+         */
+        $db = Db::start();
+        $db->clearTimer($server);
+        //放入容器中
+        $this->app->db = $db;
     }
 
     /**

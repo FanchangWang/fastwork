@@ -10,6 +10,7 @@ namespace app\index\controller;
 
 
 use fastwork\Controller;
+use fastwork\Db;
 use fastwork\facades\Redis;
 
 class Index extends Controller
@@ -17,12 +18,8 @@ class Index extends Controller
 
     public function index()
     {
-        for ($i = 1; $i <= 500; $i++) {
-            go(function () use ($i) {
-                Redis::set('redis_' . $i, $i);
-            });
-        }
-        $this->assign('title', '12121title');
+        $list = Db::name('user')->find();
+        $this->assign('title', $list);
         return $this->fetch();
     }
 }

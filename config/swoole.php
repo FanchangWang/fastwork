@@ -20,7 +20,7 @@ return [
         'worker_num' => 2,
         'max_request' => 10000, // 一个worker进程在处理完超过此数值的任务后将自动退出
         'task_worker_num' => 2,
-        'task_max_request' => 1000, // 一个task进程在处理完超过此数值的任务后将自动退出
+        'task_max_request' => 100, // 一个task进程在处理完超过此数值的任务后将自动退出
         'task_tmpdir' => Env::get('runtime_path') . 'task',
         'task_enable_coroutine' => true, //v4.2.12起支持
         'reload_async' => true, // 柔性异步重启，会等待所有协程退出后重启
