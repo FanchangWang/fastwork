@@ -86,7 +86,11 @@ class Route
             $params = array_merge($params, $query_string);
         }
         $app_namespace = Env::get('app_namespace');
+
+        $module = strtolower($module);
         $controller = ucfirst($controller);
+        $action = strtolower($action);
+
         $classname = "\\{$app_namespace}\\{$module}\\controller\\{$controller}";
         $request->setAction($action)->setController($controller)->setModule($module)->setParam($params);
         $realmvc = "{$module}/{$controller}/{$action}";

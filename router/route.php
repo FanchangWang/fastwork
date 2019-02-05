@@ -5,4 +5,4 @@
 
 use fastwork\facades\Route;
 
-Route::get('/test/:p?', 'test/index');
+Route::get('/test/:p?', 'Index/index');

@@ -9,6 +9,7 @@
 namespace traits;
 
 
+use fastwork\exception\MethodNotFoundException;
 use fastwork\exception\PoolsNotAvailableException;
 use Swoole\Coroutine\Channel;
 
@@ -48,6 +49,9 @@ trait Pools
         //未超出池最大值时
         if ($this->pool->length() < $this->config['poolMax']) {
             $this->pool->push($pools);
+        }
+        if (!method_exists($this, 'createPool')) {
+            throw  new MethodNotFoundException('createPool is not found');
         }
         $this->pushTime = time();
     }
