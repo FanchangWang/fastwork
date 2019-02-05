@@ -10,7 +10,7 @@ namespace fastwork\cache;
 
 
 use fastwork\Config;
-use fastwork\exception\RedisNotAvailableException;
+use fastwork\exception\PoolsNotAvailableException;
 use Swoole\Coroutine;
 use Swoole\Coroutine\Channel;
 use traits\Pools;

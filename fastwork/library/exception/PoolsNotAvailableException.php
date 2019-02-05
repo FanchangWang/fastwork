@@ -11,7 +11,7 @@
 namespace fastwork\exception;
 
 
-class RedisNotAvailableException extends HttpRuntimeException
+class PoolsNotAvailableException extends HttpRuntimeException
 {
 
 }

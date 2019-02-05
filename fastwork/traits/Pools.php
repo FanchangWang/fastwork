@@ -9,6 +9,7 @@
 namespace traits;
 
 
+use fastwork\exception\PoolsNotAvailableException;
 use Swoole\Coroutine\Channel;
 
 trait Pools
@@ -40,13 +41,13 @@ trait Pools
     /**
      * @入池
      *
-     * @param $redis
+     * @param $pools
      */
-    public function push($redis)
+    public function push($pools)
     {
         //未超出池最大值时
         if ($this->pool->length() < $this->config['poolMax']) {
-            $this->pool->push($redis);
+            $this->pool->push($pools);
         }
         $this->pushTime = time();
     }
@@ -54,7 +55,7 @@ trait Pools
     /**
      * @出池
      * @param null $create
-     * @return bool|mixed|\Swoole\Coroutine\Redis
+     * @return bool|mixed
      */
     public function pop($create = null)
     {
@@ -62,7 +63,7 @@ trait Pools
         back:
         $re_i++;
         if (!$this->available) {
-            throw new RedisNotAvailableException('Redis连接池正在销毁');
+            throw new PoolsNotAvailableException('Redis连接池正在销毁');
             return false;
         }
         //有空闲连接且连接池处于可用状态
@@ -71,11 +72,11 @@ trait Pools
         } else {
             $pools = $this->createPool();
         }
-        if ($pools->connected === true && $pools->errCode === 0) {
+        if ($pools->connected === true) {
             return $pools;
         } else {
             if ($re_i <= $this->config['reconnect']) {
-                unset($redis);
+                unset($pools);
                 goto back;
             }
         }
