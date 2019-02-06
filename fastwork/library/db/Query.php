@@ -9,6 +9,8 @@
 namespace fastwork\db;
 
 
+use fastwork\exception\DbException;
+use Swoole\Coroutine\MySQL;
 use traits\Pools;
 
 class Query
@@ -50,16 +52,6 @@ class Query
 
     }
 
-
-    /**
-     * @获取连接
-     *
-     * @return mixed
-     */
-    public function pool()
-    {
-        return $this->pool;
-    }
 
     /**
      * @表名
@@ -379,6 +371,56 @@ class Query
 
         return $result['sql'];
     }
+
+    /**
+     * 事物
+     * @param \Closure $success 成功的回调
+     * @param \Closure $fail 失败的回调
+     * @return mixed
+     */
+    public function transaction(\Closure $success, \Closure $fail)
+    {
+        $chan = new \chan(1);
+        go(function () use ($chan, $success, $fail) {
+            $db = $this->pool->pop();
+            defer(function () use ($db) {
+                $this->pool->push($db);
+            });
+            $db->begin();
+            try {
+                $success($db, $chan);
+            } catch (MySQL\Exception $exception) {
+                $fail($exception, $chan);
+            }
+        });
+        return $chan->pop();
+    }
+
+    /**
+     * @获取连接
+     *
+     * @return mixed
+     */
+    public function instance(): MySQL
+    {
+        return $this->pool->pop();
+    }
+
+
+    /**
+     * $入池
+     * @param $mysql
+     * @throws DbException
+     */
+    public function put($mysql)
+    {
+        if ($mysql instanceof MySQL) {
+            $this->pool->push($mysql);
+        } else {
+            throw new DbException('传入的$mysql不属于该连接池');
+        }
+    }
+
 
     public function __destruct()
     {

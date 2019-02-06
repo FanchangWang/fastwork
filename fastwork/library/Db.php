@@ -10,6 +10,7 @@ namespace fastwork;
 
 
 use fastwork\db\Query;
+use Swoole\Coroutine\MySQL;
 use traits\Pools;
 use fastwork\facades\Config;
 
@@ -17,7 +18,7 @@ use fastwork\facades\Config;
  * Class Db
  * @package fastwork
  * @method Query name($table) static 数据库表，不带前缀
- * @method Query pool() static 获取数据库连接池, 需要在go 协程中使用
+ * @method Query  transaction(\Closure $success, \Closure $fail)  static 事务执行
  */
 class Db
 {
