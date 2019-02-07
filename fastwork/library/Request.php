@@ -8,8 +8,6 @@
 
 namespace fastwork;
 
-use fastwork\facades\Cookie;
-
 class Request
 {
     /**

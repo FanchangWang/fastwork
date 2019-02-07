@@ -91,6 +91,8 @@ class Route
         $controller = ucfirst($controller);
         $action = strtolower($action);
 
+        $app = Container::get('fastwork');
+
         $classname = "\\{$app_namespace}\\{$module}\\controller\\{$controller}";
         $request->setAction($action)->setController($controller)->setModule($module)->setParam($params);
         $realmvc = "{$module}/{$controller}/{$action}";
@@ -102,7 +104,7 @@ class Route
         $constructor = $reflect->getConstructor();
         $args = [];
         if ($constructor) {
-            $args = Container::get('fastwork')->bindParams($constructor, []);
+            $args = $app->bindParams($constructor, []);
         }
         if (!$reflect->hasMethod($action)) {
             if (!$reflect->hasMethod('_empty')) {
@@ -114,7 +116,7 @@ class Route
         if (!$method->isPublic()) {
             throw new MethodNotFoundException('method not exit:' . " {$realmvc}");
         }
-        $content = Container::get('fastwork')->invokeMethod([$reflect->newInstanceArgs($args), $action], $params);
+        $content = $app->invokeMethod([$reflect->newInstanceArgs($args), $action], $params);
         return $content;
     }
 

@@ -12,7 +12,6 @@ namespace app\index\controller;
 use fastwork\Controller;
 use fastwork\Db;
 use Swoole\Coroutine\MySQL;
-use Swoole\Coroutine\MySQL\Exception;
 
 class Index extends Controller
 {

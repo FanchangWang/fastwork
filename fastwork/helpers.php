@@ -18,6 +18,7 @@ if (!function_exists('app')) {
      * @param string $name 类名或标识 默认获取当前应用实例
      * @param array $args 参数
      * @param bool $newInstance 是否每次创建新的实例
+     * @return object
      */
     function app($name = 'fastwork', $args = [], $newInstance = false)
     {
