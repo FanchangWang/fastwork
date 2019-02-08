@@ -189,7 +189,7 @@ class Query
      * @param array $whereArray
      * @return $this
      */
-    public function where($whereArray = [])
+    public function where(array $whereArray = [])
     {
         $this->options['where'] = $whereArray;
         return $this;
