@@ -92,9 +92,10 @@ class Route
         $action = strtolower($action);
 
         $app = Container::get('fastwork');
-
         $classname = "\\{$app_namespace}\\{$module}\\controller\\{$controller}";
         $request->setAction($action)->setController($controller)->setModule($module)->setParam($params);
+
+
         $realmvc = "{$module}/{$controller}/{$action}";
         if (!class_exists($classname)) {
             throw  new  ClassNotFoundException('class not exit:' . $realmvc);

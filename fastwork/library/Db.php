@@ -10,15 +10,15 @@ namespace fastwork;
 
 
 use fastwork\db\Query;
-use Swoole\Coroutine\MySQL;
-use traits\Pools;
 use fastwork\facades\Config;
+use traits\Pools;
 
 /**
  * Class Db
  * @package fastwork
  * @method Query name($table) static 数据库表，不带前缀
  * @method Query  transaction(\Closure $success, \Closure $fail)  static 事务执行
+ * @method Query query(Array $params) 执行原始SQL语句
  */
 class Db
 {

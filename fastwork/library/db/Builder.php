@@ -11,7 +11,7 @@ namespace fastwork\db;
 
 class Builder
 {
-    protected $fastworkBind = [];
+    protected $bind = [];
 
     // SQL表达式
     protected $selectSql = 'SELECT%DISTINCT% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%UNION%%ORDER%%LIMIT%%LOCK%%COMMENT%';
@@ -52,7 +52,7 @@ class Builder
 
         return [
             'sql'         => $sql,
-            'fastworkBind' => $this->fastworkBind
+            'bind' => $this->bind
         ];
     }
 
@@ -68,7 +68,7 @@ class Builder
             $fields .= "`{$k}`,";
             $values .= "?,";
 
-            $this->fastworkBind[] = $v;
+            $this->bind[] = $v;
         }
         $fields = rtrim($fields, ',');
         $values = rtrim($values, ',');
@@ -86,7 +86,7 @@ class Builder
 
         return [
             'sql'         => $sql,
-            'fastworkBind' => $this->fastworkBind
+            'bind' => $this->bind
         ];
     }
 
@@ -113,9 +113,9 @@ class Builder
             $data .= '(';
             foreach ($keys as $vv) {
                 if (isset($v[$vv])) {
-                    $this->fastworkBind[] = $v[$vv];
+                    $this->bind[] = $v[$vv];
                 } else {
-                    $this->fastworkBind[] = '';
+                    $this->bind[] = '';
                 }
                 $data .= '?,';
             }
@@ -136,7 +136,7 @@ class Builder
 
         return [
             'sql'         => $sql,
-            'fastworkBind' => $this->fastworkBind
+            'bind' => $this->bind
         ];
     }
 
@@ -150,7 +150,7 @@ class Builder
         $set = '';
         foreach ($options['data'] as $k => $v) {
             $set                 .= "`{$k}`=?,";
-            $this->fastworkBind[] = $v;
+            $this->bind[] = $v;
         }
         $set = rtrim($set, ',');
 
@@ -172,7 +172,7 @@ class Builder
 
         return [
             'sql'         => $sql,
-            'fastworkBind' => $this->fastworkBind
+            'bind' => $this->bind
         ];
     }
 
@@ -196,7 +196,7 @@ class Builder
             $this->deleteSql);
         return [
             'sql'         => $sql,
-            'fastworkBind' => $this->fastworkBind
+            'bind' => $this->bind
         ];
     }
 
@@ -287,7 +287,7 @@ class Builder
                 $whereStr .= $this->whereExp($k, $v);
             } else {
                 $whereStr            .= "(`{$k}` = ?)";
-                $this->fastworkBind[] = $v;
+                $this->bind[] = $v;
             }
 
             $whereStr .= ' AND ';
@@ -300,7 +300,7 @@ class Builder
     protected function parseCompare($k, $v)
     {
         $whereStr            = "(`{$k}` {$v[0]} ?)";
-        $this->fastworkBind[] = $v[1];
+        $this->bind[] = $v[1];
         return $whereStr;
     }
 
@@ -310,7 +310,7 @@ class Builder
 
         $value_tmp = '';
         foreach ($v[1] as $vv) {
-            $this->fastworkBind[] = $vv;
+            $this->bind[] = $vv;
             $value_tmp           .= "?,";
         }
         if (strlen($value_tmp) > 0) {
@@ -341,6 +341,6 @@ class Builder
 
     public function __destruct()
     {
-        unset($this->fastworkBind);
+        unset($this->bind);
     }
 }

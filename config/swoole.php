@@ -28,7 +28,7 @@ return [
         'pid_file' => Env::get('runtime_path') . 'swoole.pid',
         'log_file' => APP_DEBUG ? null : Env::get('runtime_path') . 'swoole.log',
         //websocket心跳配置
-        'heartbeat_check_interval' => 20, // 此选项表示每隔多久轮循一次
+        'heartbeat_check_interval' => 10, // 此选项表示每隔多久轮循一次
         'heartbeat_idle_time' => 60,
     ],
     'monitor' => [

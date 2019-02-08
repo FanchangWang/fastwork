@@ -336,7 +336,7 @@ class Query
                 if (is_array($result)) {
                     $stmt = $mysql->prepare($result['sql']);
                     if ($stmt) {
-                        $rs = $stmt->execute($result['fastworkBind']);
+                        $rs = $stmt->execute($result['bind']);
                         $this->pool->push($mysql);
                         if ($this->options['setDefer']) {
                             if ($this->options['limit'] == 1) {
@@ -363,8 +363,8 @@ class Query
      */
     protected function getRealSql($result)
     {
-        if (count($result['fastworkBind']) > 0) {
-            foreach ($result['fastworkBind'] as $v) {
+        if (count($result['bind']) > 0) {
+            foreach ($result['bind'] as $v) {
                 $result['sql'] = substr_replace($result['sql'], "'{$v}'", strpos($result['sql'], '?'), 1);
             }
         }
